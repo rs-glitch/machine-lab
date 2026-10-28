@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Machine Lab Directions</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* base reset, so the page renders the same when served on its own */
+body { margin: 0 } img { max-width: 100% } [hidden] { display: none !important }
+/* Layout: a design review sheet. Three direction cards, then the machine shortlist table. */
+:root { --bg: #f1f0ec; --panel: #ffffff; --ink: #1b1d20; --muted: #62666c; --line: #d9d8d2; --accent: #1f4fd1; --ok: #2f8a4c;
+  --f-body: "Work Sans", system-ui, sans-serif; --f-mono: "Space Mono", ui-monospace, monospace }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #141518; --panel: #1c1e22; --ink: #ecebe6; --muted: #a2a5ab; --line: #2e3137; --accent: #7d9dff; --ok: #5cc07a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #141518; --panel: #1c1e22; --ink: #ecebe6; --muted: #a2a5ab; --line: #2e3137; --accent: #7d9dff; --ok: #5cc07a; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px }
+h1 { font: 700 34px/1.05 var(--f-body); margin: 0; letter-spacing: -.02em; text-wrap: balance }
+h2 { font: 700 22px/1.15 var(--f-body); margin: 0 0 4px; letter-spacing: -.01em }
+h3 { font: 600 17px/1.2 var(--f-body); margin: 0 }
+p { margin: 0 0 8px; max-width: 68ch }
+.lede { color: var(--muted) }
+.tag { font: 700 11px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent) }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; min-width: 0 }
+.card.rec { border: 2px solid var(--accent) }
+.mock { aspect-ratio: 16 / 10; max-width: 100%; display: block; width: 100% }
+.body { padding: 14px 16px 16px; display: grid; gap: 8px; align-content: start }
+.body ul { margin: 0; padding-left: 18px } .body li { margin-bottom: 3px }
+.meta { font: 12px/1.4 var(--f-mono); color: var(--muted) }
+.refs { font-size: 13px; color: var(--muted) }
+.refs a { color: var(--accent) }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--panel) }
+table { border-collapse: collapse; width: 100%; min-width: 820px; font-size: 14px }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top }
+th { font: 700 11px/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+td.n { font: 700 14px var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap }
+tr.pick td:first-child { box-shadow: inset 3px 0 0 var(--accent) }
+.pill { font: 700 10.5px/1 var(--f-mono); padding: 3px 6px; border-radius: 4px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); white-space: nowrap }
+.ask { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="tag">Everyday Machine Lab · design review · 2026-10-23</p>
+    <h1>Three visual directions and the next machines</h1>
+    <p class="lede">The references are Dribbble ("car HUD", "simulation UI", "engineering dashboard"), Bartosz Ciechanowski's engine article, and Teenage Engineering product pages. Each direction below shows the look, the motion ideas and the cost.</p>
+  </header>
+
+  <section class="cards">
+    <article class="card rec">
+      <svg class="mock" viewBox="0 0 320 200" role="img" aria-label="Mock-up of direction A: toy-coloured cutaway engine on paper, with a warm grey control deck and a black LCD chart">
+        <rect width="320" height="200" fill="#ecebe6"/>
+        <rect x="0" y="150" width="320" height="50" fill="#cfcdc6"/>
+        <g stroke="#1b1d20" stroke-width="2.2" stroke-linejoin="round">
+          <rect x="70" y="22" width="70" height="22" fill="#f2c230"/>
+          <rect x="80" y="44" width="50" height="58" fill="#f4f3ee"/>
+          <path d="M80 60h50" stroke-dasharray="4 4" stroke-width="1"/>
+          <rect x="84" y="64" width="42" height="24" fill="#f2c230"/>
+          <path d="M100 88l-12 30h14l14-30z" fill="#2f7fd6"/>
+          <circle cx="102" cy="124" r="20" fill="#3fb34f"/>
+          <path d="M85 32l-10-18M125 32l10-18" />
+          <rect x="66" y="10" width="14" height="8" fill="#e8442e"/><rect x="130" y="10" width="14" height="8" fill="#e8442e"/>
+        </g>
+        <g fill="#2f7fd6" opacity=".8"><circle cx="90" cy="52" r="2"/><circle cx="104" cy="50" r="2"/><circle cx="116" cy="54" r="2"/><circle cx="97" cy="57" r="2"/></g>
+        <rect x="170" y="22" width="132" height="100" rx="8" fill="#16181b"/>
+        <path d="M182 108 C198 104 204 34 214 34 S236 96 290 104" fill="none" stroke="#ff7a1a" stroke-width="2"/>
+        <path d="M182 108 L290 108" stroke="#56c2ff" stroke-width="2"/>
+        <circle cx="214" cy="34" r="3.5" fill="#fff"/>
+        <text x="182" y="40" fill="#8b9097" font-family="Space Mono" font-size="9">P–V</text>
+        <g fill="#e4e2db" stroke="#9a978e"><circle cx="40" cy="175" r="14"/><circle cx="80" cy="175" r="14"/><circle cx="120" cy="175" r="14"/></g>
+        <g stroke="#1b1d20" stroke-width="2"><path d="M40 175l7-8M80 175l-6-9M120 175l9 2"/></g>
+        <rect x="160" y="163" width="40" height="24" rx="5" fill="#e8442e"/><rect x="208" y="163" width="40" height="24" rx="5" fill="#e4e2db" stroke="#9a978e"/>
+        <text x="262" y="179" fill="#1b1d20" font-family="Space Mono" font-size="11">149 N·m</text>
+      </svg>
+      <div class="body">
+        <span class="pill">Recommended</span>
+        <h2>A · Toy cutaway + hardware deck</h2>
+        <p>Each part gets one flat, saturated colour with a black outline, like the Ciechanowski engine. The model sits on warm paper. The controls look like a real device in the Teenage Engineering style: round knobs with detents, coloured keys, and charts on small black "LCD" screens.</p>
+        <ul>
+          <li>Fluids as coloured particles: blue air, yellow mixture, orange flame, grey exhaust.</li>
+          <li>Exploded-view toggle: parts fly apart along their axes with an eased motion.</li>
+          <li>Chapter tour: tap "Compressor" and the camera moves there, then the part is outlined.</li>
+          <li>Charts draw like an oscilloscope trace, with a short fading tail behind the dot.</li>
+        </ul>
+        <p class="meta">Looks hand-made, not AI-generated · cost: medium (toon shading, outline pass, new control skin)</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <svg class="mock" viewBox="0 0 320 200" role="img" aria-label="Mock-up of direction B: dark HUD with glowing engine, arc gauge and telemetry strips">
+        <defs><radialGradient id="gl" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ff8a3d" stop-opacity=".9"/><stop offset="1" stop-color="#ff8a3d" stop-opacity="0"/></radialGradient></defs>
+        <rect width="320" height="200" fill="#0b0f14"/>
+        <g stroke="#1d2a36"><path d="M0 40h320M0 80h320M0 120h320M0 160h320M64 0v200M128 0v200M192 0v200M256 0v200"/></g>
+        <circle cx="96" cy="88" r="46" fill="url(#gl)"/>
+        <g fill="none" stroke="#5fd4ff" stroke-width="1.5"><rect x="74" y="40" width="44" height="70" rx="3"/><rect x="78" y="72" width="36" height="20"/><path d="M96 92v34"/><circle cx="96" cy="140" r="16"/></g>
+        <path d="M210 120 A44 44 0 1 1 290 120" fill="none" stroke="#1d2a36" stroke-width="8"/>
+        <path d="M210 120 A44 44 0 0 1 270 72" fill="none" stroke="#5fd4ff" stroke-width="8"/>
+        <text x="236" y="112" fill="#e8f6ff" font-family="Space Mono" font-size="18">186</text>
+        <path d="M18 186 L60 180 L90 184 L120 170 L150 178 L180 166 L210 176 L240 160 L270 172 L302 158" fill="none" stroke="#3dff9e" stroke-width="1.5"/>
+        <text x="18" y="24" fill="#5fd4ff" font-family="Space Mono" font-size="9">ENGINE // CYL 1 // 2000 RPM</text>
+      </svg>
+      <div class="body">
+        <h2>B · Night-mode instrument HUD</h2>
+        <p>The Dribbble car-HUD look: graphite background, glowing wireframes, arc gauges, and scrolling telemetry strips. Hot parts glow with a bloom effect.</p>
+        <ul>
+          <li>Numbers count up when they change. Gauges sweep with spring physics.</li>
+          <li>Telemetry strips scroll in real time, like an oscilloscope.</li>
+          <li>Knock or a cabinet hit makes a red pulse and a short screen shake.</li>
+        </ul>
+        <p class="meta">Striking on a portfolio · risk: this is the most common Dribbble style, so it can still look generated · cost: medium</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <svg class="mock" viewBox="0 0 320 200" role="img" aria-label="Mock-up of direction C: blueprint drawing with dimension lines and hatching on paper">
+        <rect width="320" height="200" fill="#f6f4ee"/>
+        <g stroke="#c9c5b8" stroke-width=".5"><path d="M0 20h320M0 40h320M0 60h320M0 80h320M0 100h320M0 120h320M0 140h320M0 160h320M0 180h320M20 0v200M40 0v200M60 0v200M80 0v200M100 0v200M120 0v200M140 0v200M160 0v200M180 0v200M200 0v200M220 0v200M240 0v200M260 0v200M280 0v200M300 0v200"/></g>
+        <g fill="none" stroke="#1f3a8a" stroke-width="1.6"><rect x="70" y="30" width="80" height="120"/><rect x="80" y="70" width="60" height="30"/><path d="M110 100l-14 44"/><circle cx="110" cy="156" r="22"/></g>
+        <g stroke="#1f3a8a" stroke-width=".8"><path d="M72 32l76 36M72 44l64 30M72 56l40 18" opacity=".5"/><path d="M60 30v120M56 30h8M56 150h8"/></g>
+        <text x="30" y="94" fill="#1f3a8a" font-family="Space Mono" font-size="9">86.4</text>
+        <g fill="none" stroke="#c4402f" stroke-width="1.6"><path d="M180 140 C200 136 205 50 220 50 S250 120 300 132"/></g>
+        <text x="182" y="40" fill="#1f3a8a" font-family="Space Mono" font-size="9">FIG. 2 — P–V</text>
+        <rect x="200" y="160" width="100" height="26" fill="none" stroke="#1f3a8a"/><text x="206" y="177" fill="#1f3a8a" font-family="Space Mono" font-size="8">DWG ML-02 · REV A</text>
+      </svg>
+      <div class="body">
+        <h2>C · Living engineering drawing</h2>
+        <p>The machine appears as a technical drawing that comes alive. It has ink lines, section hatching, dimension arrows and a title block. Charts are "figures" with figure numbers.</p>
+        <ul>
+          <li>The drawing "inks itself" (line draw-on) when a lab opens.</li>
+          <li>Section cuts slide across the part to reveal the inside.</li>
+          <li>Dimensions update live as you drag (stroke, gap, compression height).</li>
+        </ul>
+        <p class="meta">Very engineering, very calm · risk: less "wow" in the first 5 s on a phone · cost: medium-high (line rendering)</p>
+      </div>
+    </article>
+  </section>
+
+  <p class="refs">References seen: <a href="https://ciechanow.ski/internal-combustion-engine/">ciechanow.ski / Internal Combustion Engine</a> (part colours, inline sliders, cutaways, pause-all toggle) · <a href="https://teenage.engineering/products/op-1">teenage.engineering OP-1</a> (hardware controls, LCD line art) · <a href="https://dribbble.com/search/car-hud-dashboard">Dribbble: car HUD dashboard</a> and <a href="https://dribbble.com/search/simulation-ui">simulation UI</a> (glow, arc gauges, telemetry) · <a href="https://www.awwwards.com/websites/3d/">Awwwards 3D</a> (scroll and transition motion).</p>
+
+  <section>
+    <p class="tag">Scope · next machines</p>
+    <h2>Twelve candidates, scored on teaching value, visual payoff and cost</h2>
+    <p class="lede">Score = concept clarity + "wow" in the first 10 s + reuse of existing code − effort (each 1–5; estimated). The top three rows are my picks for the next round.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Machine</th><th>Everyday concept</th><th>Physics model</th><th>Visual hook</th><th>Effort</th><th>Score</th></tr></thead>
+      <tbody>
+        <tr class="pick"><td><b>Heat pump / air conditioner</b></td><td>Why 1 kW of electricity gives 3 kW of heat</td><td>Reuses the fridge cycle (R-32 or R-290 tables) with a reversing valve</td><td>Flip winter/summer; the flow reverses through the same pipes</td><td>Low</td><td class="n">14</td></tr>
+        <tr class="pick"><td><b>Microwave oven</b></td><td>Standing waves and hot spots</td><td>2D wave field in the cavity (FDTD in a shader), heating ∝ |E|²</td><td>Heat map on a pizza; turntable smooths the hot spots</td><td>Medium</td><td class="n">13</td></tr>
+        <tr class="pick"><td><b>Bicycle</b></td><td>Gears, power and air drag</td><td>P = drag + rolling + slope; gear ratio and cadence</td><td>Chain jumps cogs; a rider pedals on a hill profile</td><td>Medium</td><td class="n">13</td></tr>
+        <tr><td>Vacuum cleaner</td><td>Fan curve against system curve</td><td>Operating point of fan vs. filter resistance</td><td>Dust bag fills; suction collapses</td><td>Low</td><td class="n">12</td></tr>
+        <tr><td>Pressure cooker</td><td>Boiling point rises with pressure</td><td>Water saturation table (CoolProp) + cooking-rate law</td><td>Bubbles stop as the lid seals; timer shrinks</td><td>Low</td><td class="n">12</td></tr>
+        <tr><td>Car brakes and ABS</td><td>Friction, slip and heat</td><td>Tyre slip curve, wheel lock, disc heat-up</td><td>Glowing red disc; skid marks; ABS pulses</td><td>Medium</td><td class="n">12</td></tr>
+        <tr><td>Loudspeaker / guitar</td><td>Resonance you can hear</td><td>Mass-spring cone, Helmholtz box; string harmonics</td><td>Real sound after a tap; cone moves</td><td>Medium</td><td class="n">11</td></tr>
+        <tr><td>Wind turbine</td><td>Betz limit, tip-speed ratio</td><td>Actuator disc + simple Cp(λ) curve</td><td>Blades pitch; wake particles slow down</td><td>Medium</td><td class="n">11</td></tr>
+        <tr><td>Induction cooktop</td><td>Eddy currents and magnetism</td><td>Skin depth, pan material, I²R heating</td><td>Field lines; aluminium pan stays cold</td><td>Medium</td><td class="n">10</td></tr>
+        <tr><td>Elevator</td><td>Counterweight and energy</td><td>Rigid-body + motor torque, regen braking</td><td>Cabin and counterweight pass each other</td><td>Low</td><td class="n">10</td></tr>
+        <tr><td>Espresso machine</td><td>Flow through a porous bed</td><td>Darcy's law, pump pressure, grind size</td><td>Crema drip speed changes with grind</td><td>Medium</td><td class="n">10</td></tr>
+        <tr><td>Electric motor</td><td>Rotating magnetic field</td><td>Induction-motor torque–slip curve</td><td>Rotating field arrows; rotor lags</td><td>Medium</td><td class="n">9 (engineersuniverse already has one)</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="ask">
+    <h3>One question for you</h3>
+    <p>Do I go with direction A (toy cutaway with a hardware control deck), and add the heat pump, microwave and bicycle after the overhaul? Or do you prefer B or C, or a different set of machines?</p>
+  </section>
+</div>

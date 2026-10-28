@@ -1,0 +1,1304 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Everyday Machine Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@500;700&family=Patrick+Hand&family=Kalam:wght@400;700&family=Space+Mono:wght@400;700&family=Architects+Daughter&family=Shadows+Into+Light&family=Press+Start+2P&family=Orbitron:wght@500;700&family=Archivo+Narrow:wght@500;700&display=swap">
+<style>
+/* base reset, so the page renders the same when served on its own */
+body { margin: 0 } img { max-width: 100% } [hidden] { display: none !important }
+/* Layout: instrument bench. 3D machine on the left, gauges and controls on the right, charts and missions below. */
+:root {
+  --bg: #efeae2; --panel: #fbf8f3; --ink: #2a2521; --muted: #6d655c; --line: #ddd3c5;
+  --accent: #2f7d73; --hot: #d9673f; --cold: #3f86b0; --ok: #4f8a4a; --warn: #c98a22; --bad: #c2453a;
+  --stage: radial-gradient(120% 90% at 50% 30%, #fffdf8 0%, #ebe2d4 100%);
+  --f-disp: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1b1816; --panel: #24201d; --ink: #efe6da; --muted: #a89c8f; --line: #3a332d;
+  --accent: #6fc0b2; --hot: #f08a5d; --cold: #6fb0d8; --ok: #7cc38a; --warn: #e8b04f; --bad: #f07b6b;
+  --stage: radial-gradient(120% 90% at 50% 30%, #3a322c 0%, #1d1916 100%); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #1b1816; --panel: #24201d; --ink: #efe6da; --muted: #a89c8f; --line: #3a332d;
+  --accent: #6fc0b2; --hot: #f08a5d; --cold: #6fb0d8; --ok: #7cc38a; --warn: #e8b04f; --bad: #f07b6b;
+  --stage: radial-gradient(120% 90% at 50% 30%, #3a322c 0%, #1d1916 100%); color-scheme: dark }
+/* Looks: hand-drawn styles commit to one paper each, so they override the light/dark tokens on purpose */
+:root[data-style="ink"] { --bg: #f1e7d6; --panel: #f7efe2; --ink: #4a3424; --muted: #806a52; --line: #cdb898; --accent: #b4583a; --hot: #c0623a; --cold: #4d7f99; --ok: #5f8a46; --warn: #b98431; --bad: #b1453a; --stage: #f1e7d6;
+  --f-disp: "Caveat", cursive; --f-body: "Caveat", cursive; --f-mono: "Caveat", cursive; color-scheme: light }
+:root[data-style="comic"] { --bg: #fbf1e1; --panel: #fff9ef; --ink: #2d2622; --muted: #6b5f57; --line: #2d2622; --accent: #e0683f; --hot: #e86f45; --cold: #4f95c6; --ok: #4f9b5e; --warn: #e2a43b; --bad: #d64c3f; --stage: #fdf5e8;
+  --f-disp: "Patrick Hand", cursive; --f-body: "Patrick Hand", cursive; --f-mono: "Patrick Hand", cursive; color-scheme: light }
+:root[data-style="chalk"] { --bg: #2c362f; --panel: #333f37; --ink: #f4ecdc; --muted: #c4bfae; --line: #66705f; --accent: #f1c46b; --hot: #f2a07b; --cold: #9fcfe0; --ok: #b5d99a; --warn: #f1c46b; --bad: #f29a8e; --stage: #333f37;
+  --f-disp: "Kalam", cursive; --f-body: "Kalam", cursive; --f-mono: "Kalam", cursive; color-scheme: dark }
+:root[data-style="dither"] { --bg: #efe4cf; --panel: #efe4cf; --ink: #3b2f29; --muted: #6b5b4f; --line: #3b2f29; --accent: #3b2f29; --hot: #3b2f29; --cold: #7b6a5c; --ok: #3b2f29; --warn: #3b2f29; --bad: #3b2f29; --stage: #efe4cf;
+  --f-disp: "Space Mono", monospace; --f-body: "Space Mono", monospace; --f-mono: "Space Mono", monospace; color-scheme: light }
+:root[data-style="blueprint"] { --bg: #2f4466; --panel: #34496d; --ink: #f6ecd9; --muted: #c3c9d6; --line: #7889a8; --accent: #f2c66d; --hot: #f4a582; --cold: #a9d4e8; --ok: #b6dca0; --warn: #f2c66d; --bad: #f4998c; --stage: #33496e;
+  --f-disp: "Architects Daughter", cursive; --f-body: "Architects Daughter", cursive; --f-mono: "Architects Daughter", cursive; color-scheme: dark }
+:root[data-style="riso"] { --bg: #f8ece0; --panel: #fdf5ec; --ink: #2f5f66; --muted: #6f7d78; --line: #2f7f86; --accent: #e8665f; --hot: #e8665f; --cold: #2f7f86; --ok: #4f9b6a; --warn: #ef8f4a; --bad: #d9534f; --stage: #f8ece0;
+  --f-disp: "Archivo Narrow", sans-serif; --f-body: "Archivo Narrow", sans-serif; --f-mono: "Archivo Narrow", sans-serif; color-scheme: light }
+:root[data-style="pencil"] { --bg: #f5efe5; --panel: #fbf7f0; --ink: #534b44; --muted: #857a70; --line: #b9ad9e; --accent: #c0603e; --hot: #c0603e; --cold: #4f7fa6; --ok: #5f8a50; --warn: #c38f35; --bad: #b94c3c; --stage: #f7f1e7;
+  --f-disp: "Shadows Into Light", cursive; --f-body: "Shadows Into Light", cursive; --f-mono: "Shadows Into Light", cursive; color-scheme: light }
+:root[data-style="pixel"] { --bg: #2a2233; --panel: #372c42; --ink: #f7e8d2; --muted: #c2acb9; --line: #5c4a6b; --accent: #f4b860; --hot: #f28a6b; --cold: #7fc4d8; --ok: #9bd98a; --warn: #f4b860; --bad: #f27a7a; --stage: #2c2436;
+  --f-disp: "Press Start 2P", monospace; --f-body: "Press Start 2P", monospace; --f-mono: "Press Start 2P", monospace; color-scheme: dark }
+:root[data-style="neon"] { --bg: #160f1d; --panel: #1f1628; --ink: #fbe9f0; --muted: #b39ab5; --line: #3d2c4a; --accent: #ff9ec7; --hot: #ff8f6b; --cold: #7fe3e0; --ok: #a8f0b0; --warn: #ffd27f; --bad: #ff7f8f; --stage: #160f1d;
+  --f-disp: "Orbitron", sans-serif; --f-body: "Orbitron", sans-serif; --f-mono: "Orbitron", sans-serif; color-scheme: dark }
+:root[data-style="pixel"] .panel, :root[data-style="pixel"] .stage, :root[data-style="pixel"] .tile, :root[data-style="pixel"] ol.missions li { border-radius: 0; box-shadow: 3px 3px 0 var(--line) }
+:root[data-style="neon"] .panel, :root[data-style="neon"] .stage, :root[data-style="neon"] .tile, :root[data-style="neon"] ol.missions li { border-radius: 6px; border-color: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 35%, transparent) }
+:root[data-style="blueprint"] .chart > svg, :root[data-style="pencil"] .chart > svg { filter: url(#hand) }
+:root:not([data-style="clean"]):not([data-style="cad"]) .panel, :root:not([data-style="clean"]):not([data-style="cad"]) .stage { border: 1px solid var(--ink); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px }
+:root:not([data-style="clean"]):not([data-style="cad"]) .tile, :root:not([data-style="clean"]):not([data-style="cad"]) ol.missions li { border-color: var(--ink); border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px }
+:root[data-style="ink"] .chart > svg, :root[data-style="comic"] .chart > svg, :root[data-style="chalk"] .chart > svg { filter: url(#hand) }
+.looks { display: flex; gap: 2px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 3px; max-width: 100%; overflow-x: auto }
+.looks span { font-size: 12px; color: var(--muted); padding: 0 6px }
+.looks button { font: 500 13px/1 var(--f-body); border: 0; background: none; color: var(--muted); padding: 8px 10px; border-radius: 7px; cursor: pointer; white-space: nowrap }
+.looks button[aria-pressed="true"] { background: var(--accent); color: var(--panel) }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 40px }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; padding-block: 18px 12px; max-width: 1400px; margin: 0 auto }
+h1 { font: 700 30px/1 var(--f-disp); letter-spacing: .01em; margin: 0; text-wrap: balance }
+h1 small { display: block; font: 400 13px/1.4 var(--f-body); color: var(--muted); margin-top: 6px; letter-spacing: 0 }
+nav { display: flex; gap: 4px; max-width: 100%; overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 4px }
+nav button { font: 600 16px/1 var(--f-disp); letter-spacing: .04em; text-transform: uppercase; border: 0; background: none; color: var(--muted);
+  padding: 10px 14px; border-radius: 7px; cursor: pointer }
+nav button[aria-selected="true"] { background: var(--ink); color: var(--panel) }
+nav button:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+main { max-width: 1400px; margin: 0 auto; display: grid; gap: 14px }
+/* Workbench: controls | 3D model | charts in one row, so every change shows in the model and the plots together */
+.bench { display: grid; grid-template-columns: 300px minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px; align-items: stretch }
+.intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 24px; align-items: end }
+.intro h2 { margin: 0 } .intro .home { margin: 0 }
+.learn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0 }
+.ctl .sliders { gap: 6px } .ctl .sl label { font-size: 12.5px }
+.stage { position: relative; min-height: 460px; border-radius: 12px; overflow: hidden; background: var(--stage); border: 1px solid var(--line); min-width: 0 }
+.charts { display: grid; gap: 12px; align-content: start }
+.chart { padding: 10px 12px }
+.ch { display: flex; justify-content: space-between; align-items: center; gap: 8px }
+.stage canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none }
+.ov { position: absolute; inset: 10px 10px auto 10px; display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none }
+.ov > * { pointer-events: auto }
+.chip { font: 500 12px/1 var(--f-body); border: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 88%, transparent); color: var(--ink);
+  padding: 7px 10px; border-radius: 99px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center }
+.chip i { width: 9px; height: 9px; border-radius: 50%; display: inline-block }
+.chip[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink) }
+.ovb { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; pointer-events: none }
+.ovb > * { pointer-events: auto }
+.caption { font: 12px/1.4 var(--f-mono); color: var(--muted); background: color-mix(in srgb, var(--panel) 80%, transparent); padding: 5px 8px; border-radius: 6px }
+.alarm { position: absolute; top: 50px; right: 10px; font: 700 18px/1 var(--f-disp); letter-spacing: .06em; color: #fff; background: var(--bad); padding: 8px 12px; border-radius: 6px; text-transform: uppercase }
+.eyebrow { font: 600 13px/1 var(--f-disp); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px }
+h2 { font: 700 24px/1.1 var(--f-disp); margin: 0 0 6px; text-wrap: balance }
+p { margin: 0 0 8px; max-width: 65ch }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 8px }
+.tile { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; background: var(--panel) }
+.tile b { display: block; font: 500 21px/1.15 var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap }
+.tile b small { font-size: 12px; color: var(--muted); margin-left: 3px }
+.tile span { font-size: 12px; color: var(--muted) }
+.tile em { display: block; font: 11px/1.3 var(--f-mono); font-style: normal; color: var(--muted) }
+.tile.good b { color: var(--ok) } .tile.warn b { color: var(--warn) } .tile.bad b { color: var(--bad) }
+.sliders { display: grid; gap: 10px }
+.sl label { display: flex; justify-content: space-between; gap: 8px; font-size: 13px }
+.sl output { font: 500 13px var(--f-mono); font-variant-numeric: tabular-nums; color: var(--accent); white-space: nowrap }
+.sl input { width: 100%; accent-color: var(--accent); margin: 2px 0 0; height: 24px }
+.sl .hint { font-size: 11.5px; color: var(--muted) }
+.btns { display: flex; flex-wrap: wrap; gap: 6px }
+.btn { font: 600 15px/1 var(--f-disp); letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--ink); background: var(--ink); color: var(--panel);
+  padding: 10px 14px; border-radius: 8px; cursor: pointer }
+.btn.ghost { background: none; color: var(--ink) }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px }
+.preset { font: 500 12px/1.2 var(--f-body); border: 1px solid var(--line); background: none; color: var(--ink); padding: 6px 9px; border-radius: 7px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; text-align: left }
+.preset i { width: 8px; height: 8px; border-radius: 2px; flex: none }
+.preset.opt i { background: var(--ok) } .preset.typ i { background: var(--muted) } .preset.edge i { background: var(--bad) }
+.preset[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink) }
+.pnote { font-size: 12.5px; line-height: 1.45; margin: 0 0 12px; padding: 8px 10px; border-radius: 8px; background: color-mix(in srgb, var(--line) 35%, transparent) }
+.pnote b { font-weight: 600 }
+.chart h3 { font: 600 17px/1.2 var(--f-disp); margin: 0 0 2px; letter-spacing: .02em }
+.chart p { font-size: 12.5px; color: var(--muted); margin: 0 0 6px }
+.chart > svg { width: 100%; height: auto; display: block; overflow: hidden }
+svg text { fill: var(--muted); font: 10px var(--f-mono) }
+svg .axlab { fill: var(--ink); font: 500 10.5px var(--f-body) }
+svg .grid line { stroke: var(--line); stroke-width: .6 }
+svg .frame { fill: none; stroke: var(--line) }
+svg .dome { fill: color-mix(in srgb, var(--cold) 10%, transparent); stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3 }
+svg .s-hot { stroke: var(--hot); fill: none; stroke-width: 2.2 } svg .s-cold { stroke: var(--cold); fill: none; stroke-width: 2.2 }
+svg .s-mut { stroke: var(--muted); fill: none; stroke-width: 1.8 } svg .s-ink { stroke: var(--ink); fill: none; stroke-width: 2 }
+svg .s-acc { stroke: var(--accent); fill: none; stroke-width: 2.2 } svg .s-bad { stroke: var(--bad); fill: none; stroke-width: 1.5; stroke-dasharray: 5 3 }
+svg .dash { stroke-dasharray: 4 3 } svg .hl { stroke-width: 5 }
+svg .f-bad { fill: color-mix(in srgb, var(--bad) 12%, transparent); stroke: none }
+svg .f-hot { fill: color-mix(in srgb, var(--hot) 14%, transparent); stroke: none }
+svg .lbl { fill: var(--ink); font: 600 11px var(--f-body) }
+svg .lbl-bad { fill: var(--bad); font: 600 10px var(--f-body) }
+svg .lbl-acc { fill: var(--accent); font: 600 10px var(--f-body) }
+svg .ghost { stroke: var(--ok); fill: none; stroke-width: 1.8; stroke-dasharray: 2 3 } svg .lbl-ok { fill: var(--ok); font: 600 10px var(--f-body) }
+svg .dot { fill: var(--ink); stroke: var(--panel); stroke-width: 2 }
+svg .pt-k { fill: var(--bad) } svg .pt { fill: var(--accent) } svg .trail { fill: var(--accent); opacity: .35 }
+ol.missions { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; counter-reset: m }
+ol.missions li { counter-increment: m; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; padding: 10px; border: 1px solid var(--line); border-radius: 8px }
+ol.missions li::before { content: counter(m); font: 700 18px/30px var(--f-disp); text-align: center; border-radius: 50%; border: 1.5px solid var(--line); width: 30px; height: 30px }
+ol.missions li.done::before { content: "✓"; background: var(--ok); border-color: var(--ok); color: #fff }
+ol.missions b { display: block; font-weight: 600 } ol.missions span { font-size: 13px; color: var(--muted) }
+ol.missions li.done span.win { color: var(--ok) }
+.service { display: grid; gap: 8px; margin-top: 10px }
+.service .msg { font-size: 13px }
+details { font-size: 13px; color: var(--muted) } details summary { cursor: pointer; color: var(--ink); font-weight: 600 }
+details ul { padding-left: 18px; margin: 6px 0 } details li { margin-bottom: 4px }
+.home { font-size: 14px; border-left: 3px solid var(--accent); padding: 4px 0 4px 10px; margin-top: 8px }
+.score { font: 500 13px var(--f-mono); color: var(--muted) }
+@media (max-width: 1180px) { .bench { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) } .ctl { grid-column: 1 / -1; order: 3 }
+  .ctl .sliders { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); column-gap: 20px } }
+@media (max-width: 760px) { .bench, .intro, .learn { grid-template-columns: minmax(0, 1fr) } .stage { height: 52vh; min-height: 320px }
+  .charts { order: 2 } .tiles { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) } }
+@media (max-width: 480px) { nav button { padding: 9px 9px; font-size: 14px } h1 { font-size: 26px } .tile b { font-size: 18px } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto } }
+/* Layout lock: every look keeps the same boxes. Fonts change, sizes and line counts do not. */
+*, *::before, *::after { font-size-adjust: .52 !important }
+.one { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+header { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "title looks" "nav nav"; align-items: center; gap: 10px 20px }
+header h1 { grid-area: title; min-width: 0 } header .looks { grid-area: looks } header nav { grid-area: nav; justify-self: start }
+h1, h1 small, nav button, .looks button, .eyebrow, .chart h3, .tile span, .tile b, .tile em, .sl label span, .preset, ol.missions b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.looks { flex-wrap: nowrap; height: 44px; align-items: center }
+.intro h2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2 }
+.intro .home, .chart p, .sl .hint, ol.missions span, .pnote { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden }
+.intro .home { -webkit-line-clamp: 3; height: 63px; line-height: 1.5 }
+.chart p { -webkit-line-clamp: 2; height: 38px; line-height: 1.5 }
+.sl .hint { -webkit-line-clamp: 2; height: 33px; line-height: 1.4 }
+.pnote { -webkit-line-clamp: 5; height: 107px; display: block; overflow-y: auto }
+ol.missions span { -webkit-line-clamp: 3; height: 55px; line-height: 1.4 }
+.tile { height: 76px } .tile b small { font-size: 12px }
+.presets { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px } .sliders { grid-template-columns: minmax(0, 1fr) } .ctl, .charts, .stage, .learn > * { min-width: 0 } .preset { display: flex; min-width: 0 } .preset i + * , .preset { text-overflow: ellipsis }
+.sl label { flex-wrap: nowrap } .sl label span { min-width: 0 }
+
+.looks { display: grid; grid-auto-flow: column; grid-auto-columns: 70px } .looks span, .looks button { text-align: center; padding-inline: 2px; overflow: hidden; text-overflow: ellipsis }
+.ch { height: 30px; overflow: hidden } .chart h3 { line-height: 30px }
+#conceptText { display: block; height: 126px; line-height: 1.5; overflow-y: auto }
+p { max-width: 36rem } .eyebrow { height: 16px; line-height: 16px } .preset { height: 30px; line-height: 16px }
+.sl label { height: 20px; line-height: 20px; align-items: center; min-width: 0 } .sl output { flex: 0 1 auto; min-width: 0; max-width: 58%; overflow: hidden; padding-left: 6px } .sl input, .chart > svg, .btn { display: block } .sl output { line-height: 20px }
+ol.missions b { height: 20px; line-height: 20px } details summary { height: 22px; line-height: 22px; overflow: hidden }
+.tile span, .tile em { display: block; height: 16px; line-height: 16px } .tile b { height: 28px; line-height: 28px }
+.tile { height: 104px } .tile b { height: 28px; line-height: 28px }
+.tile span, .tile em, h1 small { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden }
+.tile span { height: 30px; line-height: 15px } .tile em { height: 28px; line-height: 14px } h1 small { height: 37px; line-height: 1.4 }
+.intro .home { -webkit-line-clamp: 4; height: 84px }
+nav { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); grid-auto-rows: 46px; gap: 4px; height: auto !important; padding: 4px; width: 100%; justify-self: stretch !important; overflow: visible }
+nav button { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 2px; padding: 4px 10px; height: 46px; min-width: 0; text-align: left; border: 1px solid transparent; border-radius: 8px }
+nav button small { font: 600 9.5px/1 var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); opacity: .85; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+nav button span { font-size: 15px; line-height: 18px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+nav button:hover { border-color: var(--line) }
+nav button[aria-selected="true"] small { color: var(--panel); opacity: .8 }
+@media (max-width: 760px) { header { grid-template-columns: minmax(0, 1fr); grid-template-areas: "title" "looks" "nav" } header .looks { justify-self: start; max-width: 100% } }
+/* Teaching layer (teach.js): explanation up top, predictions, outlined readouts, glossary, myth card */
+.intro { align-items: start } .intro h2 { margin-bottom: 6px } #conceptText { margin: 0; height: 105px }
+.tile.focus { box-shadow: inset 0 0 0 2px var(--accent) }
+.more { display: none; justify-self: start; height: 32px }
+.mhelp { font-size: 12.5px; color: var(--muted); height: 36px; line-height: 18px; margin: 0 0 8px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden }
+ol.missions li > div { min-width: 0 }
+ol.missions li.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent) }
+ol.missions .pq { font-size: 13px; height: 40px; line-height: 20px; margin-top: 2px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden }
+ol.missions .pq i { font-style: normal; font-weight: 600; color: var(--accent) }
+ol.missions .po { display: grid; gap: 4px; margin-top: 6px }
+ol.missions .po button { font: 500 12.5px/16px var(--f-body); height: 30px; text-align: left; border: 1px solid var(--line); background: none; color: var(--ink); border-radius: 7px; padding: 6px 9px; cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0 }
+ol.missions .po button:hover { border-color: var(--ink) }
+ol.missions .pr, ol.missions .watch { font-size: 12px; height: 18px; line-height: 18px; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+ol.missions .pr { color: var(--muted) } ol.missions .pr.ok { color: var(--ok) } ol.missions .pr.no { color: var(--warn) }
+ol.missions .watch { font-family: var(--f-mono); color: var(--accent) }
+.myth { margin-bottom: 12px }
+.myth .mq { font: 600 17px/22px var(--f-disp); letter-spacing: .02em; height: 44px; margin: 0 0 6px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden }
+.myth .mt { font-size: 13px; height: 80px; line-height: 20px; margin: 0 0 6px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden }
+.myth details p { color: var(--ink); margin: 6px 0 0 }
+.term { text-decoration: underline dotted color-mix(in srgb, var(--accent) 75%, transparent); text-decoration-thickness: 1.5px; text-underline-offset: 2px; cursor: help }
+.term:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 2px }
+.gloss { position: fixed; z-index: 50; max-width: min(320px, calc(100vw - 32px)); background: var(--panel); color: var(--ink); border: 1px solid var(--ink); border-radius: 8px;
+  padding: 9px 11px; font: 13px/1.45 var(--f-body); box-shadow: 0 6px 20px rgba(0, 0, 0, .18) }
+.gloss b { display: block; font-weight: 600; margin-bottom: 2px }
+@media (max-width: 760px) { .more { display: inline-flex } .tiles.less .tile:not(.key):not(.focus) { display: none }
+  .ctl { order: 1 } .charts { order: 2 } #conceptText { height: 147px } }
+</style>
+
+<header>
+  <h1>Everyday Machine Lab<small>Everyday machines from your home. Turn the knobs, watch the physics, and finish the missions.</small></h1>
+  <div class="looks" id="looks" role="group" aria-label="Visual style"></div>
+  <nav role="tablist" aria-label="Machines" id="nav"></nav>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="hand"><feTurbulence id="handT" type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="1"/><feDisplacementMap in="SourceGraphic" scale="3" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
+</header>
+
+<main>
+  <section class="intro">
+    <div><p class="eyebrow" id="eyebrow"></p><h2 id="concept"></h2><p id="conceptText"></p></div>
+    <div><p class="eyebrow">At home</p><p class="home" id="home"></p></div>
+  </section>
+  <section class="tiles less" id="tiles" aria-label="Live readouts"></section>
+  <button class="chip more" id="moreTiles" type="button" aria-controls="tiles" aria-expanded="false"></button>
+  <section class="bench">
+    <div class="panel ctl"><p class="eyebrow">Presets</p><div class="presets" id="presets"></div><p class="pnote" id="pnote"></p><p class="eyebrow">Controls</p><div class="sliders" id="sliders"></div><div id="extra"></div></div>
+    <div class="stage" id="stage">
+      <canvas id="gl" aria-label="3D model of the selected machine. Drag to rotate, pinch or scroll to zoom."></canvas>
+      <div class="ov" id="chips"></div>
+      <div class="alarm" id="alarm" hidden></div>
+      <div class="ovb"><span class="caption" id="caption"></span><span class="btns" id="stageBtns"></span></div>
+    </div>
+    <div class="charts">
+      <div class="panel chart"><div class="ch"><h3 id="c1t"></h3><span class="btns" id="c1b"></span></div><p id="c1p"></p><svg id="c1" role="img"></svg></div>
+      <div class="panel chart"><div class="ch"><h3 id="c2t"></h3><span class="btns" id="c2b"></span></div><p id="c2p"></p><svg id="c2" role="img"></svg></div>
+    </div>
+  </section>
+  <section class="learn">
+    <div class="panel"><p class="eyebrow">Missions <span class="score" id="score"></span></p><p class="mhelp">Predict first, then try it. The readouts to watch are outlined.</p><ol class="missions" id="missions"></ol></div>
+    <div class="panel"><div class="myth" id="myth"></div><details id="notes"><summary>Model, assumptions and sources</summary><ul id="notesList"></ul></details></div>
+  </section>
+</main>
+<div class="gloss" id="gloss" role="tooltip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="r600a.js"></script>
+<script src="physics.js"></script>
+<script src="teach.js"></script>
+<script>
+"use strict";
+const $ = s => document.querySelector(s), P = Phys, D2R = Math.PI / 180;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (x, d = 0) => Number.isFinite(x) ? x.toFixed(d) : '–';
+const store = { get(k, d) { try { const v = localStorage.getItem('eml-' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('eml-' + k, JSON.stringify(v)); } catch (e) {} } };
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---------- SVG charts ----------
+function niceTicks(a, b, n = 5) {
+  const span = b - a, mag = Math.pow(10, Math.floor(Math.log10(span / n)));
+  const st = [1, 2, 2.5, 5, 10].map(s => s * mag).find(s => span / s <= n) || mag * 10, t = [];
+  for (let v = Math.ceil(a / st) * st; v <= b + 1e-9; v += st) t.push(+v.toFixed(10));
+  return t;
+}
+function chart(svg, o) {
+  const W = 360, H = 232, L = 46, R = 12, T = 12, B = 36;
+  const fx = o.xlog ? Math.log10 : v => v, fy = o.ylog ? Math.log10 : v => v;
+  const x0 = fx(o.x[0]), x1 = fx(o.x[1]), y0 = fy(o.y[0]), y1 = fy(o.y[1]);
+  const X = v => L + (fx(v) - x0) / (x1 - x0) * (W - L - R), Y = v => H - B - (fy(v) - y0) / (y1 - y0) * (H - T - B);
+  const xt = o.xt || niceTicks(o.x[0], o.x[1]), yt = o.yt || niceTicks(o.y[0], o.y[1]);
+  let s = '<g class="grid">' + xt.map(v => `<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${H - B}"/>`).join('') +
+    yt.map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/>`).join('') + '</g>';
+  s += `<rect class="frame" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}"/>`;
+  s += xt.map(v => `<text x="${X(v)}" y="${H - B + 13}" text-anchor="middle">${v}</text>`).join('');
+  s += yt.map(v => `<text x="${L - 5}" y="${Y(v) + 3.5}" text-anchor="end">${v}</text>`).join('');
+  s += `<text class="axlab" x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">${o.xlab}</text>`;
+  s += `<text class="axlab" transform="translate(11 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle">${o.ylab}</text>`;
+  s += `<svg x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" viewBox="${L} ${T} ${W - L - R} ${H - T - B}" overflow="hidden">${o.body(X, Y)}</svg>`;
+  s += (o.top ? o.top(X, Y) : '') + '<circle class="dot" r="5.5" cx="-20" cy="-20"/>';
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = s;
+  return { X, Y, dot: svg.querySelector('.dot') };
+}
+const path = (pts, X, Y) => pts.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join('');
+const moveDot = (c, x, y) => { if (c) { c.dot.setAttribute('cx', c.X(x)); c.dot.setAttribute('cy', c.Y(y)); } };
+
+// ---------- text fit: every label stays inside its box in every look ----------
+const FIT = 'h1, h1 small, nav button span, nav button small, .looks button, .looks span, .eyebrow, .intro h2, .intro .home, .tile span, .tile b, .tile em, .chip, .preset, .sl label span, .sl output, .sl .hint, .pnote, .chart h3, .chart p, ol.missions b, ol.missions span, .btn, #conceptText, details summary, .caption, .mhelp, .more, ol.missions .pq, ol.missions .po button, ol.missions .pr, ol.missions .watch, .myth .mq, .myth .mt';
+function fitText(root = document) {
+  const els = root.matches && root.matches(FIT) ? [root] : root.querySelectorAll(FIT);
+  els.forEach(el => {
+    el.style.fontSize = ''; el.style.lineHeight = '';
+    if (!el.clientWidth) return;
+    const cs = getComputedStyle(el), one = cs.whiteSpace === 'nowrap';
+    const lh = cs.lineHeight === 'normal' ? parseFloat(cs.fontSize) * 1.2 + 'px' : cs.lineHeight;  // keep line boxes, so the box keeps its height
+    const over = () => el.scrollWidth > el.clientWidth + 1 || (!one && el.scrollHeight > el.clientHeight + 3);
+    let fs = parseFloat(cs.fontSize), n = 0;
+    while (over() && n++ < 14 && fs > 8) { fs *= .93; el.style.lineHeight = lh; el.style.fontSize = fs.toFixed(2) + 'px'; }
+  });
+}
+
+// ---------- UI builders ----------
+function buildSliders(lab) {
+  const box = $('#sliders'); box.innerHTML = '';
+  lab.sliders.forEach(d => {
+    const id = `${lab.id}-${d.k}`, el = document.createElement('div'); el.className = 'sl';
+    el.innerHTML = `<label for="${id}"><span>${d.label}</span><output id="${id}-o"></output></label>` +
+      `<input type="range" id="${id}" min="${d.min}" max="${d.max}" step="${d.step}" value="${lab.s[d.k]}">` + (d.hint ? `<div class="hint">${d.hint}</div>` : '');
+    const inp = el.querySelector('input'), out = el.querySelector('output');
+    const show = () => out.textContent = (d.fmt ? d.fmt(lab.s[d.k]) : lab.s[d.k]) + (d.unit ? ' ' + d.unit : '');
+    inp.addEventListener('input', () => { lab.s[d.k] = +inp.value; show(); if (lab.viaPreset) { lab.viaPreset = false; markPreset(null); } lab.update(); });
+    show(); box.appendChild(el);
+  });
+}
+function setSlider(lab, k, v) { lab.s[k] = v; const i = $(`#${lab.id}-${k}`); if (i) { i.value = v; i.dispatchEvent(new Event('input')); } }
+function tiles(list) {
+  const box = $('#tiles'); box.innerHTML = list.map(t => `<div class="tile ${t.cls || ''}" data-l="${t.l}"><span>${t.l}</span><b>${t.v}<small>${t.u || ''}</small></b>${t.e ? `<em>${t.e}</em>` : ''}</div>`).join('');
+  markTiles(); glossify(box); fitText(box);
+}
+// ---------- teaching layer: key readouts, outlined readouts for the open mission, predictions, glossary (content in teach.js) ----------
+const activeMission = lab => lab.missions.find(m => !m.done);
+const hasPrefix = (list, l) => (list || []).some(p => l.startsWith(p));
+let allTiles = store.get('tiles-all', false);
+function markTiles() {
+  const lab = cur; if (!lab) return;
+  const act = activeMission(lab), tl = [...document.querySelectorAll('#tiles .tile')], watch = [];
+  tl.forEach((el, i) => { const l = el.dataset.l, f = !!act && hasPrefix(act.f, l);
+    el.classList.toggle('key', lab.keyTiles ? hasPrefix(lab.keyTiles, l) : i < 3); el.classList.toggle('focus', f); if (f) watch.push(l); });
+  const w = $('#missions .watch'); if (w) { w.textContent = watch.length ? 'Watch: ' + watch.join(' · ') : ''; fitText(w); }
+  const hidden = tl.filter(el => !el.classList.contains('key') && !el.classList.contains('focus')).length, b = $('#moreTiles');
+  $('#tiles').classList.toggle('less', !allTiles); b.hidden = !hidden; b.setAttribute('aria-expanded', allTiles);
+  b.textContent = allTiles ? 'Show fewer readouts' : `Show all ${tl.length} readouts`;
+}
+$('#moreTiles').onclick = () => { allTiles = !allTiles; store.set('tiles-all', allTiles); markTiles(); fitText($('#tiles')); };
+function buildMissions(lab) {
+  const done = store.get(lab.id + '-m', []);
+  lab.missions.forEach((m, i) => m.done = done.includes(i));
+  renderMissions(lab);
+}
+function renderMissions(lab) {
+  const pred = store.get(lab.id + '-p', {}), act = activeMission(lab);
+  $('#missions').innerHTML = lab.missions.map((m, i) => {
+    const p = pred[i], q = m.q !== undefined, ask = q && p === undefined && !m.done;
+    const said = !q || p === undefined ? '' : !m.done ? `<div class="pr">Your prediction: ${m.o[p]}</div>`
+      : p === m.a ? `<div class="pr ok">✓ Your prediction was right: ${m.o[p]}</div>` : `<div class="pr no">You predicted “${m.o[p]}”. The model says: ${m.o[m.a]}</div>`;
+    const body = ask ? `<div class="pq"><i>Predict:</i> ${m.q}</div><div class="po">${m.o.map((o, j) => `<button type="button" data-m="${i}" data-o="${j}">${o}</button>`).join('')}</div>`
+      : `<span${m.done ? ' class="win"' : ''}>${m.done ? m.win : m.d}</span>${said}`;
+    return `<li class="${m.done ? 'done' : ''}${m === act ? ' active' : ''}"><div><b>${m.t}</b>${body}${m === act && m.f ? '<div class="watch"></div>' : ''}</div></li>`;
+  }).join('');
+  document.querySelectorAll('#missions .po button').forEach(b => b.onclick = () => {
+    const pr = store.get(lab.id + '-p', {}); pr[b.dataset.m] = +b.dataset.o; store.set(lab.id + '-p', pr); renderMissions(lab); });
+  $('#score').textContent = `${lab.missions.filter(m => m.done).length} / ${lab.missions.length}`;
+  document.querySelectorAll('#missions li').forEach(glossify); markTiles();
+  fitText($('#missions'));
+}
+function checkMissions(lab, st) {
+  if (lab.viaPreset) return;  // presets must not hand out missions
+  let changed = false;
+  lab.missions.forEach((m, i) => { if (!m.done && m.check(st)) { m.done = true; changed = true; } });
+  if (changed) { store.set(lab.id + '-m', lab.missions.map((m, i) => m.done ? i : -1).filter(i => i >= 0)); renderMissions(lab); }
+}
+// glossary: the first use of each term in a block gets a dotted underline; tap, hover or Enter shows the meaning
+const GL = (() => { const by = new Map(); GLOSSARY.forEach((g, i) => g.w.forEach(w => by.set(w, i)));
+  const alt = [...by.keys()].sort((a, b) => b.length - a.length).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  return { by, re: new RegExp(`(?<![\\w-])(${alt})(?![\\w-])`, 'g') }; })();
+function glossify(root) {
+  if (!root) return; const seen = new Set(), lab = cur && cur.id, nodes = [];
+  const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('button, summary, svg, output, h2, .term') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  while (tw.nextNode()) nodes.push(tw.currentNode);
+  nodes.forEach(n => {
+    const t = n.nodeValue; let m, last = 0, frag = null; GL.re.lastIndex = 0;
+    while ((m = GL.re.exec(t))) {
+      const i = GL.by.get(m[1]), g = GLOSSARY[i]; if (seen.has(i) || (g.l && g.l !== lab)) continue; seen.add(i);
+      frag = frag || document.createDocumentFragment(); frag.append(t.slice(last, m.index));
+      const s = document.createElement('abbr'); s.className = 'term'; s.tabIndex = 0; s.setAttribute('role', 'button'); s.dataset.g = i; s.textContent = m[1];
+      frag.append(s); last = m.index + m[1].length;
+    }
+    if (frag) { frag.append(t.slice(last)); n.replaceWith(frag); }
+  });
+}
+const gloss = $('#gloss'); let glossAt = null, glossPin = false;
+function showGloss(el, pin) {
+  gloss.innerHTML = `<b>${el.textContent}</b>${GLOSSARY[+el.dataset.g].d}`; gloss.hidden = false; glossAt = el; glossPin = pin;
+  const r = el.getBoundingClientRect(), w = gloss.offsetWidth, h = gloss.offsetHeight;
+  let y = r.bottom + 6; if (y + h > innerHeight - 8) y = r.top - h - 6;
+  gloss.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + 'px'; gloss.style.top = Math.max(8, y) + 'px';
+}
+const hideGloss = () => { gloss.hidden = true; glossAt = null; glossPin = false; };
+document.addEventListener('click', e => { const t = e.target.closest('.term');
+  if (t) { e.preventDefault(); glossAt === t && glossPin ? hideGloss() : showGloss(t, true); } else if (!e.target.closest('#gloss')) hideGloss(); });
+document.addEventListener('keydown', e => { const t = e.target.closest && e.target.closest('.term');
+  if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); showGloss(t, true); } else if (e.key === 'Escape') hideGloss(); });
+document.addEventListener('mouseover', e => { const t = e.target.closest('.term'); if (t && !glossPin && matchMedia('(hover: hover)').matches) showGloss(t, false); });
+document.addEventListener('mouseout', e => { if (e.target.closest('.term') && !glossPin) hideGloss(); });
+addEventListener('scroll', () => { if (!glossPin) hideGloss(); }, { passive: true });
+// ---------- presets: optimal points against edge cases ----------
+const KIND = { opt: 'Optimal', typ: 'Typical', edge: 'Edge case' };
+function resolvePreset(lab, pr) {
+  const s = Object.assign({}, lab.s, pr.s);
+  if (s.spark === 'mbt') { const sw = P.sparkSweep(s).filter(q => !q[2]); s.spark = sw.reduce((a, b) => (b[1] > a[1] ? b : a))[0]; }
+  return s;
+}
+const optOf = lab => lab._opt || (lab._opt = resolvePreset(lab, lab.presets.find(p => p.kind === 'opt')));
+function markPreset(i) {
+  document.querySelectorAll('#presets .preset').forEach((b, j) => b.setAttribute('aria-pressed', j === i));
+  if (i === null) { $('#pnote').innerHTML = 'Manual settings. Missions count now.'; fitText($('#pnote')); }
+}
+function buildPresets(lab) {
+  $('#presets').innerHTML = lab.presets.map(p => `<button class="preset ${p.kind}" aria-pressed="false" title="${KIND[p.kind]}"><i></i>${p.n}</button>`).join('');
+  $('#pnote').innerHTML = 'Pick a preset. The green dashed line on the main chart is the optimal point.';
+  document.querySelectorAll('#presets .preset').forEach((b, i) => b.onclick = () => {
+    const pr = lab.presets[i]; Object.assign(lab.s, resolvePreset(lab, pr));
+    if (lab.fault !== undefined) lab.fault = null;
+    buildSliders(lab); lab.viaPreset = true; markPreset(i);
+    $('#pnote').innerHTML = `<b>${KIND[pr.kind]}: ${pr.n}.</b> ${pr.note} <br><span style="color:var(--muted)">Move any slider to try the missions.</span>`;
+    if (lab.onPreset) lab.onPreset(); lab.update(); glossify($('#pnote')); fitText($('#pnote'));
+  });
+}
+
+function chips(list, onPick) {
+  const pick = onPick; onPick = k => { pick(k); glossify($('#conceptText')); fitText($('#conceptText')); };
+  const box = $('#chips'); box.innerHTML = '';
+  list.forEach(c => { const b = document.createElement('button'); b.className = 'chip'; b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = `<i style="background:${c.c}"></i>${c.l}`;
+    b.onclick = () => { const on = b.getAttribute('aria-pressed') !== 'true'; box.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', on); onPick(on ? c.k : null); };
+    box.appendChild(b); });
+}
+function stageButtons(list) {
+  const box = $('#stageBtns'); box.innerHTML = '';
+  list.forEach(b => { const e = document.createElement('button'); e.className = 'chip'; e.id = b.id; e.textContent = b.l; e.onclick = () => b.f(e); box.appendChild(e); });
+}
+
+// ---------- three.js shared ----------
+const canvas = $('#gl'), renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.outputEncoding = THREE.sRGBEncoding;
+const camera = new THREE.PerspectiveCamera(38, 1, 0.01, 100), controls = new THREE.OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = .08;
+// ---------- looks: a clean render, or a hand-drawn post-process of the same 3D scene ----------
+const LOOKS = [{ id: 'clean', name: 'Clean' }, { id: 'cad', name: 'CAD edges', k: 9, wob: 0, lw: 1 }, { id: 'ink', name: 'Ink sketch', k: 0, wob: 2.4, lw: 1.2 }, { id: 'comic', name: 'Comic', k: 1, wob: .9, lw: 2.2 },
+  { id: 'chalk', name: 'Chalk', k: 2, wob: 1.6, lw: 1.6 }, { id: 'dither', name: '1-bit', k: 3, wob: 0, lw: 1 },
+  { id: 'blueprint', name: 'Blueprint', k: 4, wob: 1, lw: 1.2 }, { id: 'riso', name: 'Risograph', k: 5, wob: .6, lw: 1.4 }, { id: 'pencil', name: 'Pencil', k: 6, wob: 1.8, lw: 1 },
+  { id: 'pixel', name: 'Pixel', k: 7, wob: 0, lw: 1.5 }, { id: 'neon', name: 'Neon', k: 8, wob: .4, lw: 1 }];
+let look = LOOKS[0];
+const nMat = new THREE.ShaderMaterial({ uniforms: { far: { value: 30 } }, side: THREE.DoubleSide,
+  vertexShader: 'varying vec3 vN; varying float vZ; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); vN = normalize(normalMatrix * normal); vZ = -mv.z; gl_Position = projectionMatrix * mv; }',
+  fragmentShader: 'varying vec3 vN; varying float vZ; uniform float far; void main(){ vec3 n = normalize(vN); if (!gl_FrontFacing) n = -n; gl_FragColor = vec4(n * .5 + .5, vZ / far); }' });
+const rtOpt = { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
+const rtN = new THREE.WebGLRenderTarget(4, 4, rtOpt), rtN2 = new THREE.WebGLRenderTarget(4, 4, rtOpt), rtC = new THREE.WebGLRenderTarget(4, 4, rtOpt);
+const post = new THREE.ShaderMaterial({
+  uniforms: { tN: { value: null }, tN2: { value: null }, tC: { value: null }, res: { value: new THREE.Vector2(1, 1) }, dpr: { value: 1 }, seed: { value: 0 }, style: { value: 0 },
+    wob: { value: 2 }, lw: { value: 1.2 }, ink: { value: new THREE.Color() }, paper: { value: new THREE.Color() } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }',
+  fragmentShader: `
+precision highp float;
+varying vec2 vUv;
+uniform sampler2D tN, tN2, tC; uniform vec2 res; uniform float dpr, seed, style, wob, lw; uniform vec3 ink, paper;
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+  return mix(mix(hash(i), hash(i + vec2(1., 0.)), f.x), mix(hash(i + vec2(0., 1.)), hash(i + vec2(1., 1.)), f.x), f.y); }
+float edgeOf(sampler2D t, vec2 uv, float rad){
+  vec2 px = rad * dpr / res;
+  vec4 l = texture2D(t, uv - vec2(px.x, 0.)), r = texture2D(t, uv + vec2(px.x, 0.)), u = texture2D(t, uv + vec2(0., px.y)), d = texture2D(t, uv - vec2(0., px.y));
+  float dn = length(l.rgb - r.rgb) + length(u.rgb - d.rgb);
+  float dz = (abs(l.a - r.a) + abs(u.a - d.a)) / max(.02, min(min(l.a, r.a), min(u.a, d.a)));
+  return clamp(smoothstep(.3, .7, dn) + smoothstep(.05, .14, dz), 0., 1.);
+}
+// opaque parts give full outlines; glass shells (second pass) give lighter ones, so parts inside glass stay visible
+float edgeAt(vec2 uv, float rad){ return max(edgeOf(tN, uv, rad), edgeOf(tN2, uv, rad) * .7); }
+float hatch(vec2 fc, vec2 dir, float sp, float w){ float t = dot(fc, dir) / sp + (noise(fc * .03) - .5) * .8; float d = abs(fract(t) - .5) * sp; return 1. - smoothstep(w * .5, w * .5 + 1., d); }
+float bayer2(vec2 a){ a = floor(a); return fract(a.x / 2. + a.y * a.y * .75); }
+float bayer4(vec2 a){ return bayer2(.5 * a) * .25 + bayer2(a); }
+vec3 hue(vec3 c){ return c / max(.001, max(c.r, max(c.g, c.b))); }
+vec3 tex(vec2 uv){ return pow(texture2D(tC, uv).rgb, vec3(1. / 2.2)); }
+void main(){
+  vec2 fc = gl_FragCoord.xy / dpr, uv = vUv;
+  vec2 w = vec2(noise(fc * .025 + seed * 7.13), noise(fc * .025 + seed * 3.31 + 19.)) - .5;
+  vec2 uvw = uv + w * wob * dpr / res * 2.;
+  if (style > 6.5 && style < 7.5) { float P = 4. * dpr; uvw = (floor(gl_FragCoord.xy / P) * P + P * .5) / res; fc = floor(fc / 4.); }
+  vec2 apx = lw * dpr / res;
+  float aeg = smoothstep(.12, .45, abs(texture2D(tC, uvw - vec2(apx.x, 0.)).a - texture2D(tC, uvw + vec2(apx.x, 0.)).a) + abs(texture2D(tC, uvw + vec2(0., apx.y)).a - texture2D(tC, uvw - vec2(0., apx.y)).a));
+  float e = max(edgeAt(uvw, lw), aeg);
+  vec4 n = texture2D(tN, uvw); vec3 c = tex(uvw);
+  float cov = smoothstep(.04, .75, texture2D(tC, uvw).a), bg = step(texture2D(tC, uvw).a, .03), lum = dot(c, vec3(.3, .59, .11));
+  float grain = noise(fc * .7) * .5 + noise(fc * .13) * .5;
+  vec3 col;
+  if (style < .5) {
+    vec3 pap = paper * (.94 + .06 * grain);
+    vec2 wo = uv + (vec2(noise(fc * .012 + 3.), noise(fc * .012 + 9.)) - .5) * 16. * dpr / res;
+    vec3 wc = tex(wo); float wbg = step(texture2D(tC, wo).a, .03);
+    vec3 wash = mix(pap, pap * mix(vec3(1.), hue(wc), .6), (1. - wbg) * (.5 + .35 * noise(fc * .05)) * (.35 + .65 * cov));
+    float h = 0.;
+    if (bg < .5) { h = max(h, hatch(fc, normalize(vec2(1., 1.)), 6., 1.) * step(lum, .6));
+      h = max(h, hatch(fc, normalize(vec2(1., -1.)), 6., 1.) * step(lum, .42));
+      h = max(h, hatch(fc, normalize(vec2(1., .15)), 4.5, 1.) * step(lum, .26)); }
+    col = mix(wash, ink, max(e, h * .7 * cov) * (.7 + .3 * grain));
+  } else if (style < 1.5) {
+    float band = lum > .62 ? 1. : lum > .38 ? .8 : .58;
+    col = mix(paper, hue(c) * band, .88 * cov);
+    col = mix(col, ink, e);
+  } else if (style < 2.5) {
+    vec3 board = paper * (.82 + .3 * noise(fc * .004 + 2.)) * (.95 + .05 * grain);
+    float chalk = smoothstep(.2, .8, noise(fc * 1.3 + seed));
+    float h = 0.;
+    if (bg < .5) h = max(hatch(fc, normalize(vec2(1., .6)), 7., 1.6) * step(lum, .72), hatch(fc, normalize(vec2(-.6, 1.)), 7., 1.6) * step(lum, .46));
+    col = mix(board, mix(ink, hue(c) * .55 + .45, .65), h * .6 * chalk * cov);
+    col = mix(col, ink, e * (.5 + .5 * chalk));
+  } else if (style < 3.5) {
+    float on = step(bayer4(fc * .5), lum * 1.2 - .08);
+    col = mix(paper, mix(ink, paper, on), cov);
+    col = mix(col, ink, step(.45, e));
+  } else if (style < 4.5) {
+    col = paper * (.9 + .1 * noise(fc * .006));
+    float gm = max(step(fract(fc.x / 24.), 1. / 24.), step(fract(fc.y / 24.), 1. / 24.)), gM = max(step(fract(fc.x / 120.), 2. / 120.), step(fract(fc.y / 120.), 2. / 120.));
+    col = mix(col, ink, .1 * gm + .14 * gM);
+    float h = bg < .5 ? hatch(fc, normalize(vec2(1., 1.)), 7., .9) * step(lum, .5) : 0.;
+    col = mix(col, ink, max(e * .95, h * .35 * cov));
+  } else if (style < 5.5) {
+    mat2 R1 = mat2(.707, -.707, .707, .707), R2 = mat2(.966, .259, -.259, .966);
+    float pink = step(length(fract(R1 * fc / 5.) - .5), sqrt(1. - lum) * .6);
+    vec3 c2 = tex(uvw + vec2(2., -1.) * dpr / res);
+    float blu = clamp(c2.b - c2.r * .4 + .35 * (1. - dot(c2, vec3(.33))), 0., 1.);
+    float teal = step(length(fract(R2 * fc / 5.) - .5), sqrt(blu) * .55);
+    col = paper * (.96 + .04 * grain);
+    col *= mix(vec3(1.), vec3(.91, .42, .38), pink * cov * .9);
+    col *= mix(vec3(1.), vec3(.18, .5, .53), teal * cov * .85);
+    col *= mix(vec3(1.), ink * 1.2, e);
+  } else if (style < 6.5) {
+    vec3 pap = paper * (.96 + .04 * grain);
+    float gl = max(step(fract(fc.x / 20.), 1. / 20.), step(fract(fc.y / 20.), 1. / 20.));
+    pap = mix(pap, vec3(.62, .76, .9), .35 * gl);
+    float streak = noise(vec2(dot(fc, vec2(.8, .6)) * .9, dot(fc, vec2(-.6, .8)) * .05));
+    float sh = cov * (1. - lum) * (.5 + .5 * streak);
+    col = mix(pap, ink, clamp(sh * .65 + e * (.55 + .45 * grain), 0., 1.));
+  } else if (style < 7.5) {
+    vec3 q = floor(hue(c) * min(1., lum * 1.6 + .25) * 4. + .5) / 4.;
+    col = mix(paper, q, cov);
+    col = mix(col, vec3(.13, .09, .15), step(.35, e));
+  } else if (style > 8.5) {
+    // CAD 'shaded with edges': the normal shaded model, crisp dark feature edges, a soft viewport gradient
+    vec3 vp = mix(paper * .86 + vec3(0., .01, .03), paper, uv.y);
+    col = mix(vp, c, smoothstep(.0, .05, texture2D(tC, uvw).a));
+    col = mix(col, ink, min(1., e * 1.2));
+  } else {
+    float core = max(edgeAt(uvw, 1.), aeg), glow = edgeAt(uvw, 4.) * .5 + edgeAt(uvw, 9.) * .25;
+    vec3 neon = mix(vec3(.5, .92, .88), vec3(1., .56, .76), clamp(n.y * 1.4 - .2, 0., 1.));
+    col = paper + neon * (core + glow * .7) + hue(c) * .06 * (1. - bg);
+    col *= .93 + .07 * sin(gl_FragCoord.y * 1.6);
+  }
+  gl_FragColor = vec4(col, 1.);
+}` });
+const postScene = new THREE.Scene(), postCam = new THREE.Camera(); postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), post));
+function sizeRT(w, h) { const d = renderer.getPixelRatio(), W = Math.round(w * d), H = Math.round(h * d); rtN.setSize(W, H); rtN2.setSize(W, H); rtC.setSize(W, H); post.uniforms.res.value.set(W, H); post.uniforms.dpr.value = d; }
+// sort visible objects: opaque meshes, glass shells, and marks (particles, lines) that have no useful normals
+function partition(sc) {
+  const op = [], tr = [], mk = [];
+  sc.traverse(o => { if (!o.visible) return;
+    if (o.isLine || o.isInstancedMesh || o.isPoints || o.isSprite) mk.push(o);
+    else if (o.isMesh) (o.material && o.material.transparent && o.material.opacity < .7 ? tr : op).push(o); });
+  return { op, tr, mk };
+}
+function normalPass(sc, rt, show, hide) {
+  hide.forEach(o => o.visible = false);
+  renderer.setRenderTarget(rt); renderer.setClearColor(0x8080ff, 1); renderer.clear();
+  if (show.length) renderer.render(sc, camera);
+  hide.forEach(o => o.visible = true);
+}
+// CAD look: real feature edges (faces meeting at > 40 deg) as line children of each solid part, like 'shaded with edges'
+const cadMat = new THREE.LineBasicMaterial({ color: 0x17191b });
+function cadEdges(sc, on) {
+  if (!!sc.userData.cadOn === on) return; sc.userData.cadOn = on;
+  if (on && !sc.userData.cadBuilt) {
+    sc.userData.cadBuilt = true; const list = [];
+    sc.traverse(o => { if (o.isMesh && !o.isInstancedMesh && o.geometry && !/Tube|Torus|Sphere|Plane|Circle/.test(o.geometry.type) && !(o.material && o.material.transparent && o.material.opacity < .3)) list.push(o); });
+    list.forEach(o => { const e = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, 40), cadMat); e.userData.cad = true; o.add(e); });
+  }
+  sc.traverse(o => { if (o.userData.cad) o.visible = on; });
+}
+function draw(sc, now) {
+  cadEdges(sc, look.id === 'cad');
+  if (look.id === 'clean') { renderer.render(sc, camera); return; }
+  const { op, tr, mk } = partition(sc);
+  sc.overrideMaterial = nMat;
+  normalPass(sc, rtN, op, tr.concat(mk));
+  normalPass(sc, rtN2, tr, op.concat(mk));
+  sc.overrideMaterial = null;
+  renderer.setRenderTarget(rtC); renderer.setClearColor(0xffffff, 0); renderer.clear(); renderer.render(sc, camera);  // alpha marks what is drawn
+  renderer.setRenderTarget(null); renderer.setClearColor(0x000000, 0);
+  const seed = reduced ? 0 : Math.floor(now / 125) % 7;
+  if (seed !== post.uniforms.seed.value) { post.uniforms.seed.value = seed; const t = $('#handT'); if (t) t.setAttribute('seed', seed + 1); }
+  post.uniforms.tN.value = rtN.texture; post.uniforms.tN2.value = rtN2.texture; post.uniforms.tC.value = rtC.texture; renderer.render(postScene, postCam);
+}
+function setLook(id) {
+  look = LOOKS.find(l => l.id === id) || LOOKS[0]; document.documentElement.dataset.style = look.id; store.set('look', look.id);
+  if (look.k !== undefined) { const cs = getComputedStyle(document.documentElement);
+    Object.assign(post.uniforms.style, { value: look.k }); post.uniforms.wob.value = look.wob; post.uniforms.lw.value = look.lw;
+    post.uniforms.ink.value.set(look.id === 'cad' ? '#17191b' : cs.getPropertyValue('--ink').trim());
+    post.uniforms.paper.value.set(cs.getPropertyValue(look.id === 'cad' ? '--panel' : '--stage').trim()); }
+  document.querySelectorAll('#looks button').forEach(b => b.setAttribute('aria-pressed', b.dataset.look === look.id));
+  if (cur) cur.update();  // charts pick up the new tokens
+  const fam = getComputedStyle(document.documentElement).getPropertyValue('--f-body').split(',')[0].trim();
+  (document.fonts ? document.fonts.load(`14px ${fam}`).then(() => document.fonts.ready) : Promise.resolve()).then(() => fitText()).catch(() => fitText());
+}
+function buildLooks() {
+  $('#looks').innerHTML = '<span>Look</span>' + LOOKS.map(l => `<button data-look="${l.id}" aria-pressed="false">${l.name}</button>`).join('');
+  document.querySelectorAll('#looks button').forEach(b => b.onclick = () => setLook(b.dataset.look));
+  setLook(store.get('look', 'clean'));
+}
+const M = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .5, metalness: .25 }, o));
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+function lights(scene) {
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, .9));
+  const d = new THREE.DirectionalLight(0xffffff, .9); d.position.set(2, 4, 3); scene.add(d);
+  const d2 = new THREE.DirectionalLight(0xffffff, .35); d2.position.set(-3, 2, -2); scene.add(d2);
+}
+function glassBox(w, h, d, color = 0x9fb3c2, op = .07) {
+  const g = new THREE.Group(), geo = new THREE.BoxGeometry(w, h, d);
+  g.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide })));
+  const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0x6f8494 })); g.add(e); g.edges = e;
+  return g;
+}
+function tube(pts, r, mat, tension = .08) {
+  const curve = new THREE.CatmullRomCurve3(pts.map(p => V3(...p)), false, 'catmullrom', tension);
+  const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(24, pts.length * 14), r, 8), mat);
+  return { mesh, curve, len: curve.getLength() };
+}
+function stretch(mesh, a, b) {  // place a unit-height Y-aligned mesh between points a and b
+  const dir = b.clone().sub(a), len = dir.length();
+  mesh.position.copy(a).addScaledVector(dir, .5); mesh.scale.set(1, len, 1);
+  mesh.quaternion.setFromUnitVectors(V3(0, 1, 0), dir.normalize());
+}
+function helixGeo(r, turns, wire) {
+  const pts = []; for (let i = 0; i <= turns * 24; i++) { const t = i / 24 * 2 * Math.PI; pts.push(V3(r * Math.cos(t), i / (turns * 24) - .5, r * Math.sin(t))); }
+  return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), turns * 24, wire, 6);
+}
+const cHot = new THREE.Color(), cCold = new THREE.Color(), HOT = new THREE.Color(0xff8a2a);
+function tempColor(T, out) {  // -30 C cold blue .. 80 C hot red
+  const f = Math.max(0, Math.min(1, (T + 30) / 110));
+  return out.copy(cCold.set(0x2a85c0)).lerp(cHot.set(0xe0552f), f);
+}
+
+// =====================================================================
+// LAB 1: REFRIGERATOR
+// =====================================================================
+const fridge = {
+  id: 'fridge', tab: 'Refrigerator',
+  charts: ['Pressure–enthalpy diagram', 'The loop is one trip of the refrigerant. The white dot follows the bright particle in the 3D model.', 'COP against kitchen temperature', 'A hotter kitchen means a bigger lift and less cooling per watt. The dashed line is the Carnot limit.'],
+  eyebrow: 'Lab 1 · Vapour-compression cycle', concept: 'A fridge moves heat uphill by boiling a liquid',
+  text: 'The refrigerant (R-600a, isobutane) boils at about −26 °C in the freezer and takes heat from the food. The compressor squeezes the vapour, so it gets hot. The hot coil on the back gives the heat to the room. A thin capillary tube drops the pressure, and the cycle starts again.',
+  home: 'A bigger temperature lift costs more power. A hot kitchen or a dusty back coil makes the same food cost more to keep cold.',
+  s: { Troom: 25, Tset: -18, rpm: 3000, approach: 12, SH: 5, SC: 3, etaIs: .65 },
+  sliders: [
+    { k: 'Troom', label: 'Kitchen temperature', min: 10, max: 45, step: 1, unit: '°C' },
+    { k: 'Tset', label: 'Freezer set point', min: -30, max: -6, step: 1, unit: '°C', hint: 'The evaporator runs 8 K colder than the set point.' },
+    { k: 'rpm', label: 'Compressor speed (inverter)', min: 1200, max: 4500, step: 100, unit: 'rpm' },
+    { k: 'approach', label: 'Condenser lift above room', min: 6, max: 25, step: 1, unit: 'K', hint: 'A dusty coil or no air gap behind the fridge makes this larger.' },
+    { k: 'SH', label: 'Suction superheat', min: 0, max: 20, step: 1, unit: 'K' },
+    { k: 'SC', label: 'Liquid subcooling', min: 0, max: 10, step: 1, unit: 'K' },
+    { k: 'etaIs', label: 'Compressor isentropic efficiency', min: .4, max: .85, step: .01, fmt: v => Math.round(v * 100) + ' %' },
+  ],
+  fault: null, hl: null, u: 0,
+  presets: [
+    { n: 'Best efficiency', kind: 'opt', s: { Troom: 20, Tset: -15, rpm: 1800, approach: 7, SH: 3, SC: 6, etaIs: .75 }, note: 'Cool kitchen, clean coil with an air gap, a slow compressor and a modest set point. COP is about 2.5, and the energy use is half of the typical case.' },
+    { n: 'Typical kitchen', kind: 'typ', s: { Troom: 25, Tset: -18, rpm: 3000, approach: 12, SH: 5, SC: 3, etaIs: .65 }, note: 'A normal fridge-freezer at 25 °C. The compressor runs about 60 % of the time.' },
+    { n: 'Heatwave 43 °C', kind: 'edge', s: { Troom: 43, Tset: -18, rpm: 3000, approach: 12, SH: 5, SC: 3, etaIs: .65 }, note: 'The lift is too large. Capacity falls below the heat leak, so the compressor runs all the time and the freezer still warms.' },
+    { n: 'Dusty coil in a hot garage', kind: 'edge', s: { Troom: 35, Tset: -18, rpm: 3000, approach: 22, SH: 5, SC: 3, etaIs: .65 }, note: 'The condenser cannot reject heat. The discharge pressure and temperature climb (over 80 °C), and COP falls below 1.' },
+    { n: 'Deep freeze −30 °C', kind: 'edge', s: { Troom: 25, Tset: -30, rpm: 3000, approach: 12, SH: 5, SC: 3, etaIs: .65 }, note: 'A very low set point means very thin suction vapour. The mass flow and capacity drop, and the fridge cannot hold the set point.' },
+  ],
+  missions: [
+    { t: 'Heatwave', d: 'Set the kitchen to 40 °C or more. The freezer can no longer hold −18 °C. Make it hold again without a warmer set point.', win: 'Done. A faster compressor or a clean coil gives more capacity, but the power goes up.',
+      check: r => r.p.Troom >= 40 && r.p.Tset <= -18 && r.holds && !fridge.fault },
+    { t: 'Efficiency hunt', d: 'Get a COP above 2.5. Find which two knobs have the largest effect.', win: 'Done. COP depends most on the lift between evaporator and condenser temperatures.',
+      check: r => r.COP > 2.5 && !fridge.fault },
+    { t: 'Service call', d: 'Press "Service call". The fridge gets a hidden fault. Read the gauges and pick the cause.', win: 'Done. Technicians use the same gauges: pressures, discharge temperature and superheat.',
+      check: () => fridge.diagnosed },
+  ],
+  faults: {
+    dirty: { l: 'Dirty condenser coil', d: { approach: 12 }, why: 'The condensing pressure and the discharge temperature are high. Heat cannot leave the coil.' },
+    charge: { l: 'Low refrigerant charge', d: { SH: 14, SC: -3, gap: 5 }, why: 'The suction pressure is low, the superheat is high and the subcooling is gone. Too little liquid reaches the evaporator.' },
+    ice: { l: 'Iced-up evaporator', d: { gap: 11 }, why: 'Only the evaporator pressure falls. Ice blocks the heat flow, so the coil runs much colder than the freezer.' },
+  },
+  eff() {  // slider values plus the hidden fault
+    const s = this.s, f = this.fault ? this.faults[this.fault].d : {};
+    return { Troom: s.Troom, Tset: s.Tset, rpm: s.rpm, etaIs: s.etaIs, approach: s.approach + (f.approach || 0),
+      SH: s.SH + (f.SH || 0), SC: Math.max(0, s.SC + (f.SC || 0)), evapGap: 8 + (f.gap || 0) };
+  },
+  build() {
+    const sc = new THREE.Scene(); lights(sc);
+    const cab = glassBox(.6, 1.7, .62); cab.position.set(0, .85, 0); sc.add(cab);
+    const div = new THREE.Mesh(new THREE.BoxGeometry(.58, .04, .6), M(0xdfe6ea, { transparent: true, opacity: .5 })); div.position.set(0, 1.15, 0); sc.add(div);
+    [0.45, 0.8].forEach(y => { const sh = new THREE.Mesh(new THREE.BoxGeometry(.56, .012, .5), M(0xc9e3f0, { transparent: true, opacity: .35 })); sh.position.set(0, y, .03); sc.add(sh); });
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(1.4, 48), M(0x8796a3, { transparent: true, opacity: .18 })); floor.rotation.x = -Math.PI / 2; sc.add(floor);
+    const comp = new THREE.Mesh(new THREE.SphereGeometry(.1, 32, 20), M(0x23292e, { metalness: .5 })); comp.scale.set(1.15, .9, .9); comp.position.set(.12, .12, -.24); sc.add(comp);
+    // refrigerant loop: compression -> condenser -> capillary -> evaporator + suction line
+    const cond = [[.24, .14, -.24], [.27, .3, -.36], [.27, 1.6, -.36]];
+    for (let i = 0; i < 10; i++) { const y = 1.6 - i * .14, x = i % 2 ? .27 : -.27; cond.push([x, y, -.36]); cond.push([x, y - .14, -.36]); }
+    cond.push([-.25, .25, -.36]);
+    const cap = [[-.25, .25, -.36]];
+    for (let i = 1; i <= 160; i++) { const t = i / 160, a = t * 18 * 2 * Math.PI; cap.push([-.2 + .022 * Math.cos(a), .27 + t * .9, -.36 + .022 * Math.sin(a)]); }
+    cap.push([-.22, 1.24, -.27]);
+    const evap = [[-.22, 1.24, -.27]];
+    for (let i = 0; i < 4; i++) { const y = 1.24 + i * .1, x = i % 2 ? -.22 : .22; evap.push([x, y, -.27]); evap.push([x, y + .1, -.27]); }
+    evap.push([.2, 1.64, -.33], [.04, 1.4, -.34], [0, .5, -.34], [0, .2, -.3], [.04, .13, -.24]);
+    const compPath = [[.04, .13, -.24], [.12, .2, -.24], [.24, .14, -.24]];
+    this.segs = [
+      Object.assign(tube(compPath, .012, M(0xe0552f)), { k: 'comp' }),
+      Object.assign(tube(cond, .009, M(0xd9733c)), { k: 'cond' }),
+      Object.assign(tube(cap, .004, M(0xb59a3a), .02), { k: 'cap' }),
+      Object.assign(tube(evap, .009, M(0x3f8fc4)), { k: 'evap' }),
+    ];
+    this.segs.forEach(s => sc.add(s.mesh));
+    this.total = this.segs.reduce((a, s) => a + s.len, 0);
+    const N = 220, pm = new THREE.InstancedMesh(new THREE.SphereGeometry(.011, 8, 6), new THREE.MeshBasicMaterial(), N);
+    this.parts = pm; this.N = N; sc.add(pm);
+    const tr = new THREE.Mesh(new THREE.SphereGeometry(.024, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    this.tracer = tr; sc.add(tr);
+    const food = new THREE.Mesh(new THREE.BoxGeometry(.18, .14, .14), M(0x7fb069)); food.position.set(-.1, .53, .05); sc.add(food);
+    const ice = new THREE.Mesh(new THREE.BoxGeometry(.2, .1, .2), M(0xcfe8f5, { transparent: true, opacity: .8 })); ice.position.set(.08, 1.22, .05); sc.add(ice);
+    this.scene = sc; this.cam = { p: [1.6, 1.4, -1.9], t: [0, .85, -.1] };
+  },
+  chipsList: [{ k: 'comp', l: 'Compressor 1→2', c: '#e0552f' }, { k: 'cond', l: 'Condenser 2→3', c: '#d9733c' }, { k: 'cap', l: 'Capillary 3→4', c: '#b59a3a' }, { k: 'evap', l: 'Evaporator 4→1', c: '#3f8fc4' }],
+  partInfo: {
+    comp: 'Compressor: the only part that uses power. It raises the vapour pressure about 9 times, and the vapour leaves at about 60 °C.',
+    cond: 'Condenser: the hot coil on the back. The vapour gives heat to the room and turns into liquid.',
+    cap: 'Capillary tube: a long, thin tube. Friction drops the pressure, so part of the liquid flashes to vapour and gets very cold.',
+    evap: 'Evaporator: in the freezer wall. The cold liquid boils and takes heat from the food.',
+  },
+  // state along the loop for segment k at fraction f: [h, P, T]
+  stateAt(k, f) {
+    const r = this.r, e = P.satAt(r.Te), c = P.satAt(r.Tc), lg = (a, b) => Math.exp(Math.log(a) + (Math.log(b) - Math.log(a)) * f);
+    if (k === 0) return [r.h1 + f * (r.h2 - r.h1), lg(r.Pe, r.Pc), r.T1 + f * (r.T2 - r.T1)];
+    if (k === 1) { const h = r.h2 + f * (r.h3 - r.h2);
+      const T = h > c.hg ? r.Tc + (r.T2 - r.Tc) * (h - c.hg) / (r.h2 - c.hg) : h > c.hf ? r.Tc : r.Tc - (c.hf - h) / Math.max(1e-6, c.hf - r.h3) * (r.Tc - r.T3);
+      return [h, r.Pc, T]; }
+    if (k === 2) return [r.h3, lg(r.Pc, r.Pe), r.T3 + f * (r.Te - r.T3)];
+    const h = r.h4 + f * (r.h1 - r.h4);
+    return [h, r.Pe, h < e.hg ? r.Te : r.Te + (r.T1 - r.Te) * (h - e.hg) / Math.max(1e-6, r.h1 - e.hg)];
+  },
+  locate(u) {  // loop fraction -> segment index, local fraction
+    let d = (u % 1) * this.total;
+    for (let i = 0; i < 4; i++) { if (d <= this.segs[i].len) return [i, d / this.segs[i].len]; d -= this.segs[i].len; }
+    return [3, 1];
+  },
+  update() {
+    const r = this.r = P.fridgeCycle(this.eff());
+    const base = this.fault ? P.fridgeCycle(Object.assign(this.eff(), { approach: this.s.approach, SH: this.s.SH, SC: this.s.SC, evapGap: 8 })) : null;
+    const dl = (v, b, d = 0, u = '') => base ? `healthy ${fmt(b, d)}${u}` : '';
+    tiles([
+      { l: 'COP (cooling ÷ power)', v: fmt(r.COP, 2), e: `Carnot limit ${fmt(r.COPcarnot, 2)}`, cls: r.COP > 2 ? 'good' : r.COP < 1.2 ? 'warn' : '' },
+      { l: 'Cooling capacity', v: fmt(r.Qe), u: 'W', e: dl(r.Qe, base && base.Qe, 0, ' W') },
+      { l: 'Electric power', v: fmt(r.Pel), u: 'W' },
+      { l: 'Compressor runs', v: r.holds ? fmt(r.duty * 100) : '100', u: '%', cls: r.holds ? (r.duty > .85 ? 'warn' : '') : 'bad', e: r.holds ? 'of the time' : 'cannot hold set point' },
+      { l: 'Energy per year', v: fmt(r.kWhDay * 365), u: 'kWh', e: `≈ $${fmt(r.kWhDay * 365 * .17)} at $0.17/kWh` },
+      { l: 'Suction pressure', v: fmt(r.Pe), u: 'kPa', e: dl(r.Pe, base && base.Pe, 0, ' kPa') || `${fmt(r.Te)} °C boiling` },
+      { l: 'Discharge pressure', v: fmt(r.Pc), u: 'kPa', e: dl(r.Pc, base && base.Pc, 0, ' kPa') || `${fmt(r.Tc)} °C condensing` },
+      { l: 'Discharge temperature', v: fmt(r.T2), u: '°C', cls: r.T2 > 95 ? 'bad' : '', e: dl(r.T2, base && base.T2, 0, ' °C') },
+      { l: 'Superheat / subcool', v: `${fmt(r.p.SH)} / ${fmt(r.p.SC)}`, u: 'K', e: base ? `healthy ${fmt(base.p.SH)} / ${fmt(base.p.SC)} K` : '' },
+    ]);
+    $('#alarm').hidden = r.holds; $('#alarm').textContent = 'Freezer warming';
+    this.drawCharts(); checkMissions(this, r);
+  },
+  drawCharts() {
+    const r = this.r, dome = P.satDome(), hl = this.hl;
+    const cyc = [[[r.h1, r.Pe], [r.h2, r.Pc]], [[r.h2, r.Pc], [r.h3, r.Pc]], [[r.h3, r.Pc], [r.h4, r.Pe]], [[r.h4, r.Pe], [r.h1, r.Pe]]];
+    const cls = ['s-hot', 's-hot', 's-mut', 's-cold'], keys = ['comp', 'cond', 'cap', 'evap'];
+    const g = P.fridgeCycle(Object.assign({ evapGap: 8 }, optOf(this)));
+    const ghostCycle = (X, Y) => `<path class="ghost" d="${path([[g.h1, g.Pe], [g.h2, g.Pc], [g.h3, g.Pc], [g.h4, g.Pe], [g.h1, g.Pe]], X, Y)}"/><text class="lbl-ok" x="${X(g.h2) + 4}" y="${Y(g.Pc) + 12}">optimal</text>`;
+    this.c1 = chart($('#c1'), { x: [150, 750], y: [20, 2000], ylog: true, yt: [20, 50, 100, 200, 500, 1000, 2000], xlab: 'Specific enthalpy h (kJ/kg)', ylab: 'Pressure (kPa, log scale)',
+      body: (X, Y) => `<path class="dome" d="${path(dome, X, Y)}Z"/>` +
+        ghostCycle(X, Y) +
+        `<text class="lbl-acc" x="${X(260)}" y="${Y(1300)}">liquid</text><text class="lbl-acc" x="${X(400)}" y="${Y(600)}">liquid + vapour</text><text class="lbl-acc" x="${X(650)}" y="${Y(1300)}">vapour</text>` +
+        cyc.map((s, i) => `<path class="${cls[i]} ${hl === keys[i] ? 'hl' : ''}" d="${path(s, X, Y)}"/>`).join('') +
+        [[r.h1, r.Pe, '1'], [r.h2, r.Pc, '2'], [r.h3, r.Pc, '3'], [r.h4, r.Pe, '4']].map(([h, p, n]) => `<text class="lbl" x="${X(h) + (n === '1' || n === '2' ? 6 : -12)}" y="${Y(p) + (n === '2' || n === '3' ? -6 : 14)}">${n}</text>`).join('') });
+    $('#c1').setAttribute('aria-label', `Pressure-enthalpy diagram. Evaporator ${fmt(r.Pe)} kPa, condenser ${fmt(r.Pc)} kPa.`);
+    // COP vs kitchen temperature for the current settings
+    const e = this.eff(), sweep = [];
+    for (let t = 10; t <= 45; t += 1) { const q = P.fridgeCycle(Object.assign({}, e, { Troom: t })); sweep.push([t, q.COP, q.COPcarnot, q.holds]); }
+    const fail = sweep.filter(s => !s[3]).map(s => s[0]), ymax = 5;
+    this.c2 = chart($('#c2'), { x: [10, 45], y: [0, ymax], xlab: 'Kitchen temperature (°C)', ylab: 'COP',
+      body: (X, Y) => (fail.length ? `<rect class="f-bad" x="${X(Math.min(...fail) - .5)}" y="${Y(ymax)}" width="${X(45) - X(Math.min(...fail) - .5)}" height="${Y(0) - Y(ymax)}"/><text class="lbl-bad" x="${X(Math.min(...fail)) + 3}" y="${Y(ymax) + 12}">cannot hold</text>` : '') +
+        `<path class="s-mut dash" d="${path(sweep.map(s => [s[0], Math.min(s[2], ymax)]), X, Y)}"/><path class="s-acc" d="${path(sweep.map(s => [s[0], s[1]]), X, Y)}"/>` +
+        `<text class="lbl-acc" x="${X(12)}" y="${Y(sweep[2][1]) - 8}">this fridge</text><text x="${X(12)}" y="${Y(Math.min(sweep[2][2], ymax)) + 12}">Carnot limit</text>` });
+    moveDot(this.c2, r.p.Troom, r.COP);
+  },
+  frame(dt) {
+    if (!this.r) return;
+    const speed = .035 * this.s.rpm / 3000;  // loop fraction per second (shown slowed down)
+    this.u = (this.u + dt * speed) % 1;
+    const m = new THREE.Matrix4(), col = new THREE.Color();
+    for (let i = 0; i < this.N; i++) {
+      const u = (this.u + i / this.N) % 1, [k, f] = this.locate(u), st = this.stateAt(k, f);
+      const p = this.segs[k].curve.getPointAt(f), liquid = (k === 1 && f > .55) || k === 2;
+      const sc = liquid ? 1.25 : .8; m.makeScale(sc, sc, sc).setPosition(p); this.parts.setMatrixAt(i, m);
+      this.parts.setColorAt(i, tempColor(st[2], col));
+    }
+    this.parts.instanceMatrix.needsUpdate = true; if (this.parts.instanceColor) this.parts.instanceColor.needsUpdate = true;
+    const [k, f] = this.locate(this.u), st = this.stateAt(k, f);
+    this.tracer.position.copy(this.segs[k].curve.getPointAt(f));
+    moveDot(this.c1, st[0], st[1]);
+    $('#caption').textContent = `white dot: ${['compressing', 'condensing', 'expanding', 'boiling'][k]} · ${fmt(st[1])} kPa · ${fmt(st[2])} °C`;
+  },
+  pick(k) {
+    this.hl = k; this.segs.forEach(s => s.mesh.material.emissive.setHex(s.k === k ? 0x553300 : 0));
+    $('#conceptText').textContent = k ? this.partInfo[k] : this.text; this.drawCharts();
+  },
+  extra() {
+    const box = $('#extra'); box.innerHTML = `<div class="service"><div class="btns"><button class="btn" id="svc">Service call</button></div><div class="msg" id="svcMsg"></div><div class="btns" id="svcPick"></div></div>`;
+    $('#svc').onclick = () => {
+      const keys = Object.keys(this.faults); this.fault = keys[Math.floor(Math.random() * keys.length)]; this.diagnosedNow = false;
+      $('#svcMsg').textContent = 'A customer says: "The freezer is not cold enough." Read the gauges. Each one shows its healthy value below. Pick the cause.';
+      $('#svcPick').innerHTML = keys.map(k => `<button class="btn ghost" data-f="${k}">${this.faults[k].l}</button>`).join('');
+      $('#svcPick').querySelectorAll('button').forEach(b => b.onclick = () => {
+        if (b.dataset.f === this.fault) { $('#svcMsg').textContent = 'Correct. ' + this.faults[this.fault].why + ' The fault is now repaired.'; this.fault = null; this.diagnosed = true; $('#svcPick').innerHTML = ''; }
+        else $('#svcMsg').textContent = `Not this one. A ${this.faults[b.dataset.f].l.toLowerCase()} gives a different pattern. Compare each gauge with its healthy value.`;
+        this.update(); });
+      this.update();
+    };
+  },
+  notes: [
+    'R-600a properties: CoolProp 7 tables (saturation every 1 K, superheat every 5 K), interpolated in the browser.',
+    'Compressor: 6 cm³ displacement (est.), clearance volumetric efficiency with 3.5 % clearance (est.), motor efficiency 80 % (est.).',
+    'Evaporator 8 K below the freezer set point; condenser "lift" above room temperature is a slider. Pressure drops in pipes are ignored.',
+    'Cabinet heat leak 1.2 W/K plus 5 W for door openings (est.). Electricity price $0.17/kWh (est.).',
+    'Check: a published 65 L R-600a fridge test gave COP 1.34–1.36 and 80–82 W capacity (E3S Web Conf. 286, 01008, 2021). This model gives COP 1.56 and 92 W at its defaults.',
+  ],
+};
+
+// =====================================================================
+// LAB 2: ENGINE
+// =====================================================================
+const engine = {
+  id: 'engine', tab: 'Car engine',
+  charts: ['Pressure–volume diagram', 'The area inside the loop is the work of one cycle. The dot follows the piston.', 'Torque against spark timing', 'Each dot is a full simulated cycle. The best timing is MBT. Red dots knock.'],
+  eyebrow: 'Lab 2 · Four-stroke spark-ignition cycle', concept: 'An engine turns a fast fire into a push on the piston',
+  text: 'Suck, squeeze, bang, blow. The piston draws in air and fuel, then squeezes the mixture. The spark starts a flame, and the pressure rises to about 60 bar. The gas pushes the piston down. The area inside the loop on the P–V chart is the work of one cycle.',
+  home: 'A higher compression ratio gives more work from the same fuel, until the end gas self-ignites (knock). Premium fuel resists knock. That is why some cars need it.',
+  s: { nCyl: 4, CR: 10, spark: 10, pInt: 100, rpm: 2000, octane: 91 }, c2mode: 'crank',
+  sliders: [
+    { k: 'nCyl', label: 'Cylinders (inline)', min: 1, max: 6, step: 1 },
+    { k: 'CR', label: 'Compression ratio', min: 7, max: 14, step: .5, fmt: v => v.toFixed(1) + ' : 1' },
+    { k: 'spark', label: 'Spark timing (before top dead centre)', min: 0, max: 50, step: 1, unit: '°' },
+    { k: 'pInt', label: 'Throttle → intake pressure', min: 30, max: 100, step: 1, unit: 'kPa', hint: '100 kPa is full throttle. Less is part load.' },
+    { k: 'rpm', label: 'Engine speed', min: 1000, max: 6000, step: 100, unit: 'rpm' },
+    { k: 'octane', label: 'Fuel octane (RON)', min: 87, max: 100, step: 1 },
+  ],
+  th: -360, log: false,
+  presets: [
+    { n: 'Best efficiency', kind: 'opt', s: { CR: 11, spark: 'mbt', pInt: 100, rpm: 2000, octane: 95 }, note: 'Wide-open throttle at moderate speed, the highest compression that does not knock on 95 RON, and spark at MBT. Brake efficiency is about 33 %.' },
+    { n: 'Highway cruise', kind: 'typ', s: { CR: 10, spark: 'mbt', pInt: 50, rpm: 2500, octane: 91 }, note: 'Half-closed throttle. The engine makes about a third of its full-load torque, and pumping loss pulls efficiency down to about 24 %.' },
+    { n: 'Maximum power', kind: 'typ', s: { CR: 10, spark: 'mbt', pInt: 100, rpm: 6000, octane: 91 }, note: 'Most kilowatts, but friction grows with speed, so torque and efficiency fall.' },
+    { n: 'Light load in town', kind: 'edge', s: { CR: 10, spark: 10, pInt: 30, rpm: 1000, octane: 91 }, note: 'Nearly closed throttle. Look at the log-scale P–V chart: the pumping loop is large compared with the work loop.' },
+    { n: 'Cheap fuel, high compression', kind: 'edge', s: { CR: 13, spark: 30, pInt: 100, rpm: 1500, octane: 87 }, note: 'The end gas self-ignites before the flame arrives: knock. In a real engine this can break a piston.' },
+    { n: 'Spark far too late', kind: 'edge', s: { CR: 10, spark: 0, pInt: 100, rpm: 2000, octane: 91 }, note: 'The flame burns while the piston already moves away. Peak pressure falls, and much of the heat leaves with the exhaust.' },
+  ],
+  missions: [
+    { t: 'Best spark timing', d: 'Find the spark timing that gives the most torque (MBT). Switch the second chart to "Torque vs spark".', win: 'Done. Too early fights the rising piston; too late wastes the expansion. Peak pressure falls near 10–15° after top dead centre.',
+      check: r => !r.knock && Math.abs(r.p.spark - engine.mbt) <= 2 },
+    { t: 'Cheap fuel, high compression', d: 'Use 87 octane fuel at a compression ratio of 11 or more. Remove the knock without a change of fuel.', win: 'Done. Later spark stops knock but costs torque. Modern engines do this with a knock sensor.',
+      check: r => r.p.octane <= 87 && r.p.CR >= 11 && !r.knock },
+    { t: 'The part-load penalty', d: 'Close the throttle to 40 kPa or less. Switch the P–V chart to log scale and find the pumping loop.', win: 'Done. Below the line the engine works to suck air past the throttle. This is one reason hybrids and small engines save fuel.',
+      check: r => r.p.pInt <= 40 && engine.log },
+  ],
+  build() {
+    const sc = new THREE.Scene(); lights(sc); const k = 10, p = P.ENGINE_DEFAULTS, n = this.s.nCyl, pitch = 1.0;  // 1 unit = 100 mm
+    this.k = k; this.a = p.S / 2 * k; this.Lr = p.L * k; this.rB = p.B / 2 * k; this.pTop = .41; this.yTDC = this.a + this.Lr + this.pTop;
+    this.builtN = n;
+    const steel = M(0x9aa5ae, { metalness: .7, roughness: .35 }), dark = M(0x3b4349, { metalness: .6, roughness: .4 });
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.22, .22, n * pitch + .5, 32), steel); shaft.rotation.x = Math.PI / 2; sc.add(shaft);
+    const head = new THREE.Group(); sc.add(head); this.head = head;
+    const hb = new THREE.Mesh(new THREE.BoxGeometry(1.25, .45, n * pitch), M(0x7d8b95, { transparent: true, opacity: .45, depthWrite: false })); hb.position.y = .225; head.add(hb);
+    this.cyl = P.FIRING[n][0].map((off, i) => {
+      const z = (i - (n - 1) / 2) * pitch, c = { off, z };
+      const thr = new THREE.Group(); thr.position.z = z; sc.add(thr); c.thr = thr;  // one crank throw per cylinder, phased by its firing offset
+      [-.3, .3].forEach(dz => { const w = new THREE.Mesh(new THREE.CylinderGeometry(.62, .62, .12, 40, 1, false, Math.PI / 2, Math.PI), dark);
+        w.rotation.x = Math.PI / 2; w.position.z = dz; thr.add(w);
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(.42, this.a + .2, .12), dark); arm.position.set(0, this.a / 2, dz); thr.add(arm); });
+      const cp = new THREE.Mesh(new THREE.CylinderGeometry(.2, .2, .5, 24), steel); cp.rotation.x = Math.PI / 2; cp.position.y = this.a; thr.add(cp);
+      c.rod = new THREE.Mesh(new THREE.BoxGeometry(.22, 1, .16), steel); sc.add(c.rod);
+      const pist = new THREE.Group(); pist.position.z = z; sc.add(pist); c.piston = pist;
+      const pb = new THREE.Mesh(new THREE.CylinderGeometry(this.rB * .985, this.rB * .985, .62, 40), M(0xb8c0c6, { metalness: .6, roughness: .3 })); pb.position.y = .1; pist.add(pb);
+      [.32, .26, .2].forEach(y => { const ring = new THREE.Mesh(new THREE.TorusGeometry(this.rB * .99, .012, 6, 40), dark); ring.rotation.x = Math.PI / 2; ring.position.y = y; pist.add(ring); });
+      const pin = new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, .7, 16), steel); pin.rotation.x = Math.PI / 2; pist.add(pin);
+      c.gas = new THREE.Mesh(new THREE.CylinderGeometry(this.rB * .97, this.rB * .97, 1, 40), new THREE.MeshStandardMaterial({ color: 0x88bbdd, transparent: true, opacity: .55, emissive: 0, depthWrite: false }));
+      sc.add(c.gas);
+      c.liner = new THREE.Mesh(new THREE.CylinderGeometry(this.rB * 1.05, this.rB * 1.05, 2.1, 48, 1, true), new THREE.MeshStandardMaterial({ color: 0x9fb3c2, transparent: true, opacity: .16, side: THREE.DoubleSide, depthWrite: false }));
+      sc.add(c.liner);
+      const plug = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .5, 12), M(0xe8e8e8)); plug.position.set(0, .4, z); head.add(plug);
+      c.flash = new THREE.PointLight(0xffaa44, 0, 3); c.flash.position.set(0, -.05, z); head.add(c.flash);
+      c.valves = [-1, 1].map(sx => { const v = new THREE.Group();
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, .6, 10), steel); stem.position.y = .3; v.add(stem);
+        const disc = new THREE.Mesh(new THREE.CylinderGeometry(.16, .1, .05, 24), M(sx < 0 ? 0x3f8fc4 : 0xd9733c, { metalness: .5 })); v.add(disc);
+        v.position.set(sx * .2, 0, z); head.add(v);
+        const port = new THREE.Mesh(new THREE.CylinderGeometry(.11, .11, .55, 16), M(sx < 0 ? 0x3f8fc4 : 0xd9733c, { transparent: true, opacity: .6 }));
+        port.rotation.z = Math.PI / 2 - sx * .5; port.position.set(sx * .55, .25, z); head.add(port);
+        return v; });
+      return c;
+    });
+    this.scene = sc; const d = 1 + (n - 1) * .12; this.cam = { p: [4.6 * d, 3.0 * d, 5.6 * d], t: [0, 1.25, 0] };
+    this.place();
+  },
+  place() {  // head and liners follow the compression ratio: clearance height = Vc / bore area
+    const r = P.engineGeom(Object.assign({}, P.ENGINE_DEFAULTS, { CR: this.s.CR })), A = Math.PI * (P.ENGINE_DEFAULTS.B / 2) ** 2;
+    this.hc = r.Vc / A * this.k; const yHead = this.yTDC + this.hc;
+    this.head.position.y = yHead; this.yHead = yHead;
+    const yBot = this.yTDC - 2 * this.a - .55;
+    this.cyl.forEach(c => { c.liner.scale.y = (yHead - yBot) / 2.1; c.liner.position.set(0, (yHead + yBot) / 2, c.z); });
+  },
+  chipsList: [{ k: 'in', l: 'Intake', c: '#3f8fc4' }, { k: 'co', l: 'Compression', c: '#7a8a96' }, { k: 'ex', l: 'Power', c: '#e0552f' }, { k: 'ou', l: 'Exhaust', c: '#8a6f5a' }],
+  partInfo: {
+    in: 'Intake (−360° to −180°): the piston moves down and the intake valve is open. A closed throttle makes the pressure here low, so the engine must work to pull air in.',
+    co: 'Compression (−180° to 0°): both valves are closed. The mixture is squeezed into the small space above the piston. The spark fires before the top.',
+    ex: 'Power (0° to 180°): the flame raises the pressure. The gas pushes the piston down. This is the only stroke that makes work.',
+    ou: 'Exhaust (180° to 360°): the exhaust valve opens and the piston pushes the burned gas out.',
+  },
+  update() {
+    const r = this.r = P.engineCycle(this.s), sw = this.sweep = P.sparkSweep(this.s), ct = this.ct = P.crankTorque(r, this.s.nCyl);
+    this.mbt = sw.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+    tiles([
+      { l: `Shaft torque (${r.p.nCyl} cyl.)`, v: fmt(r.torque), u: 'N·m', e: `gas ${fmt(ct.mean)} − friction ${fmt(ct.mean - r.torque)} · ${fmt(r.Vd * r.p.nCyl * 1e3, 2)} L` },
+      { l: 'Torque swing', v: fmt(ct.ripple, 1), u: '× mean', e: `${P.FIRING[r.p.nCyl][1]} · ${fmt(720 / r.p.nCyl)}°`, cls: ct.ripple > 8 ? 'warn' : ct.ripple < 3 ? 'good' : '' },
+      { l: 'Power', v: fmt(r.power, 1), u: 'kW', e: `${fmt(r.power * 1.341)} hp` },
+      { l: 'Brake efficiency', v: fmt(r.etaB * 100, 1), u: '%', e: `ideal Otto ${fmt(r.etaOtto * 100)} %`, cls: r.etaB > .3 ? 'good' : r.etaB < .2 ? 'warn' : '' },
+      { l: 'Peak pressure', v: fmt(r.Pmax), u: 'bar', e: `at ${fmt(r.thPmax)}° after TDC` },
+      { l: 'Knock index', v: fmt(r.knockI, 2), e: r.knock ? 'KNOCK: end gas self-ignites' : 'knock starts at 1.00', cls: r.knock ? 'bad' : r.knockI > .85 ? 'warn' : 'good' },
+      { l: 'Pumping loss', v: fmt(r.pmep, 2), u: 'bar', e: `friction ${fmt(r.fmep, 2)} bar` },
+      { l: 'Best spark (MBT)', v: fmt(this.mbt), u: '°', e: 'before TDC' },
+      { l: 'Fuel per cylinder', v: fmt(r.mf * 1e6, 1), u: 'mg', e: 'per cycle' },
+    ]);
+    $('#alarm').hidden = !r.knock; $('#alarm').textContent = 'Knock';
+    if (this.scene && this.builtN !== this.s.nCyl) { this.build(); addDecor(this); fitCam(); } else if (this.head) this.place();
+    this.drawCharts(); checkMissions(this, r);
+  },
+  drawCharts() {
+    const r = this.r, cc = r.pts.map(q => [q[1] * 1e6, q[2] / 100]), Vmax = (r.Vd + r.Vc) * 1e6, hl = this.hl;
+    const strokes = { in: [-360, -180], co: [-180, 0], ex: [0, 180], ou: [180, 360] };
+    const seg = (a, b) => cc.filter((_, i) => r.pts[i][0] >= a && r.pts[i][0] <= b);
+    const g = P.engineCycle(optOf(this)), gc = g.pts.map(q => [q[1] * 1e6, q[2] / 100]);
+    const ymax = Math.max(10, Math.ceil(Math.max(r.Pmax, g.Pmax) / 10) * 10);
+    const o = this.log ? { y: [.2, 200], ylog: true, yt: [.2, .5, 1, 2, 5, 10, 20, 50, 100, 200], x: [Math.max(10, Math.floor(r.Vc * 1e6 / 10) * 10), Math.ceil(Vmax / 100) * 100], xlog: true, xt: [20, 50, 100, 200, 500] }
+      : { y: [0, ymax], x: [0, Math.ceil(Vmax / 100) * 100] };
+    const colors = { in: 's-cold', co: 's-mut', ex: 's-hot', ou: 's-ink' };
+    this.c1 = chart($('#c1'), Object.assign(o, { xlab: 'Cylinder volume (cm³)', ylab: `Pressure (bar${this.log ? ', log' : ''})`,
+      body: (X, Y) => `<path class="ghost" d="${path(gc, X, Y)}"/><text class="lbl-ok" x="${X(gc[0][0] + 160)}" y="${Y(this.log ? 60 : g.Pmax * .7)}">optimal</text>` + Object.entries(strokes).map(([k, [a, b]]) => `<path class="${colors[k]} ${hl === k ? 'hl' : ''}" d="${path(seg(a, b), X, Y)}"/>`).join('') +
+        (this.log ? `<text class="lbl-acc" x="${X(150)}" y="${Y(.35)}">pumping loop</text>` : '') }));
+    $('#c1').setAttribute('aria-label', `P–V diagram, peak ${fmt(r.Pmax)} bar.`);
+    if (this.c2mode === 'crank') {
+      const ct = this.ct, n = this.s.nCyl, lo = Math.floor(Math.min(ct.min, 0) / 100) * 100, hi = Math.ceil(ct.max / 100) * 100;
+      $('#c2t').textContent = 'Crank torque against crank angle';
+      $('#c2p').textContent = `${n > 1 ? `All ${n} cylinders summed` : 'One cylinder'} (gas pressure only). Each bump is one firing, every ${fmt(720 / n)}°. Flatter is smoother.`;
+      this.c2 = chart($('#c2'), { x: [-360, 360], y: [lo, hi], xt: [-360, -180, 0, 180, 360], xlab: 'Crank angle of cylinder 1 (°)', ylab: 'Torque (N·m)',
+        body: (X, Y) => `<line class="s-mut" x1="${X(-360)}" x2="${X(360)}" y1="${Y(0)}" y2="${Y(0)}"/><line class="s-ink dash" x1="${X(-360)}" x2="${X(360)}" y1="${Y(ct.mean)}" y2="${Y(ct.mean)}"/>` +
+          `<path class="s-acc" d="${path(ct.pts, X, Y)}"/><text class="lbl" x="${X(-350)}" y="${Y(ct.mean) - 5}">gas mean ${fmt(ct.mean)} N·m (before friction)</text>` +
+          (ct.min < 0 ? `<text class="lbl-bad" x="${X(-350)}" y="${Y(lo) - 5}">below 0: the crank is braked</text>` : '') });
+      return;
+    }
+    $('#c2t').textContent = 'Torque against spark timing'; $('#c2p').textContent = 'Each dot is a full simulated cycle. The best timing is MBT. Red dots knock.';
+    const sw = this.sweep, tmax = Math.ceil(Math.max(...sw.map(s => s[1]), 10) / 20) * 20 + 20, tmin = Math.min(0, Math.floor(Math.min(...sw.map(s => s[1])) / 20) * 20);
+    const kn = sw.filter(s => s[2]).map(s => s[0]);
+    this.c2 = chart($('#c2'), { x: [0, 50], y: [tmin, tmax], xlab: 'Spark timing (° before TDC)', ylab: 'Torque (N·m)',
+      body: (X, Y) => (kn.length ? `<rect class="f-bad" x="${X(Math.min(...kn) - 1)}" y="${Y(tmax)}" width="${X(50) - X(Math.min(...kn) - 1)}" height="${Y(tmin) - Y(tmax)}"/><text class="lbl-bad" x="${X(Math.min(...kn)) + 2}" y="${Y(tmax) + 12}">knock</text>` : '') +
+        `<path class="s-acc" d="${path(sw.map(s => [s[0], s[1]]), X, Y)}"/>` + sw.map(s => `<circle class="${s[2] ? 'pt-k' : 'pt'}" r="2.4" cx="${X(s[0])}" cy="${Y(s[1])}"/>`).join('') +
+        `<line class="s-mut dash" x1="${X(this.mbt)}" x2="${X(this.mbt)}" y1="${Y(tmin)}" y2="${Y(tmax)}"/><text x="${X(this.mbt) + 3}" y="${Y(tmin) - 4}">MBT ${this.mbt}°</text>` });
+    moveDot(this.c2, r.p.spark, r.torque);
+  },
+  frame(dt) {
+    if (!this.r) return;
+    this.th += dt * 720 / 3.2; if (this.th >= 360) this.th -= 720;  // one cycle in 3.2 s (slowed)
+    const th = this.th, a = this.a, r = this.r, wrap = x => ((x + 360) % 720 + 720) % 720 - 360;
+    const at = t => r.pts[Math.min(r.pts.length - 1, Math.max(0, Math.round((t + 360) / .5)))];
+    const lift = (t, c, w) => { const d = Math.abs(((t - c + 540) % 720) - 180); return d < w ? .09 * Math.cos(d / w * Math.PI / 2) ** 2 : 0; };
+    let knockNow = false;
+    this.cyl.forEach(c => {
+      const tl = wrap(th - c.off), t = tl * D2R, q = at(tl);
+      c.thr.rotation.z = -t;
+      const yPin = P.pistonY(P.ENGINE_DEFAULTS, tl) * this.k;
+      c.piston.position.y = yPin; stretch(c.rod, V3(a * Math.sin(t), a * Math.cos(t), c.z), V3(0, yPin, c.z));
+      const yTop = yPin + this.pTop, hgt = Math.max(.01, this.yHead - yTop);
+      c.gas.scale.y = hgt; c.gas.position.set(0, yTop + hgt / 2, c.z);
+      c.valves[0].position.y = -lift(tl, -270, 115); c.valves[1].position.y = -lift(tl, 270, 115);
+      const g = c.gas.material, knocking = r.knock && tl >= r.knockAt && tl < r.knockAt + 40;
+      if (tl < -180) g.color.setHex(0x88bbdd); else if (tl < 0 && q[3] === 0) g.color.setHex(0x9aaab8);
+      else if (tl < 180) g.color.setHex(0x9aaab8).lerp(HOT, Math.min(1, q[3] * 1.2) * Math.max(.25, 1 - (tl - 10) / 200));
+      else g.color.setHex(0x7a6a5e);
+      g.emissive.copy(g.color).multiplyScalar(tl > -this.s.spark && tl < 120 ? .5 * q[3] : 0);
+      c.flash.intensity = (tl > -this.s.spark - 1 && tl < -this.s.spark + 8 ? 3 : 0) + (knocking ? 4 * Math.random() : 0);
+      knockNow = knockNow || knocking;
+    });
+    this.scene.position.x = knockNow ? (Math.random() - .5) * .03 : 0;
+    const q = at(th);
+    moveDot(this.c1, q[1] * 1e6, q[2] / 100);
+    if (this.c2mode === 'crank' && this.ct) moveDot(this.c2, ...this.ct.pts[Math.min(this.ct.pts.length - 1, Math.round((th + 360) / 2))]);
+    const stroke = th < -180 ? 'intake' : th < 0 ? 'compression' : th < 180 ? 'power' : 'exhaust';
+    $('#caption').textContent = `cylinder 1: ${stroke} · crank ${fmt(th)}° · ${fmt(q[2] / 100, 1)} bar · firing ${P.FIRING[this.s.nCyl][1]} · shown ${fmt(this.s.rpm / 37.5)}× slower`;
+  },
+  pick(k) { this.hl = k; $('#conceptText').textContent = k ? this.partInfo[k] : this.text; this.drawCharts(); },
+  extra() {
+    $('#extra').innerHTML = '';
+    $('#c1b').innerHTML = `<button class="chip" id="logbtn" aria-pressed="${this.log}">Log scale</button>`;
+    $('#logbtn').onclick = e => { this.log = !this.log; e.target.setAttribute('aria-pressed', this.log); this.drawCharts(); checkMissions(this, this.r); };
+    const lbl = () => this.c2mode === 'crank' ? 'Torque vs spark' : 'Crank torque';
+    $('#c2b').innerHTML = `<button class="chip" id="c2btn">${lbl()}</button>`;
+    $('#c2btn').onclick = e => { this.c2mode = this.c2mode === 'crank' ? 'spark' : 'crank'; e.target.textContent = lbl(); this.drawCharts(); };
+  },
+  notes: [
+    'Single-zone, crank-angle model. Bore 81 mm, stroke 86.4 mm, rod 144 mm: 0.445 L per cylinder (est., one cylinder of a typical 1.8 L car engine). 1 to 6 cylinders in line with their usual firing orders.',
+    'Crank-torque chart: gas-pressure torque of all cylinders summed. Piston and rod inertia are ignored, so real high-speed torque swings differ.',
+    'Heat release: Wiebe function a = 5, m = 2, 50° burn duration (textbook values). 18 % of the heat goes to the walls (est., lumped). γ = 1.3.',
+    'Knock: Livengood–Wu integral with the Douaud–Eyzat (1978) ignition delay, times 3.2 (est. calibration). At 1500 rpm and full throttle, knock starts near CR 11 (87 RON), CR 12 (91) and CR 13 (98).',
+    'Friction: 0.97 + 0.15·N + 0.05·N² bar with N in 1000 rpm (est.). Intake at throttle pressure, exhaust at 105 kPa, ideal valve events at the dead centres.',
+    'Trends are reliable. Absolute numbers are within about 20 % of a real engine (est.).',
+  ],
+};
+
+// =====================================================================
+// LAB 3: WASHING MACHINE
+// =====================================================================
+const washer = {
+  id: 'washer', tab: 'Washing machine',
+  charts: ['Tub swing against drum speed', 'Dashed: steady-state theory. Dots: this run, as the drum speeds up.', 'Force on the floor against drum speed', 'Above the red line, friction cannot hold the machine and it walks.'],
+  eyebrow: 'Lab 3 · Forced vibration and resonance', concept: 'A spinning wet towel shakes the whole machine',
+  text: 'The drum hangs on springs and sits on dampers. A clump of wet clothes is an off-centre mass. When the spin speed matches the natural frequency of the springs, small pushes add up: this is resonance. Far above that speed the tub moves less, and only the damper force reaches the floor.',
+  home: 'Your washer slows down and redistributes the clothes before a fast spin. It must pass resonance quickly, and it must not hit the cabinet or walk across the floor.',
+  s: { mu: .3, zeta: .15, fn: 2.5, spin: 1200, ramp: 120 },
+  sliders: [
+    { k: 'mu', label: 'Clump of wet clothes (imbalance)', min: 0, max: 1.5, step: .05, unit: 'kg' },
+    { k: 'spin', label: 'Spin speed target', min: 0, max: 1600, step: 10, unit: 'rpm' },
+    { k: 'ramp', label: 'Speed-up rate', min: 20, max: 400, step: 10, unit: 'rpm/s' },
+    { k: 'zeta', label: 'Damping ratio (dampers)', min: .02, max: .5, step: .01 },
+    { k: 'fn', label: 'Spring natural frequency', min: 1.2, max: 5, step: .1, unit: 'Hz', hint: 'Softer springs give a lower natural frequency.' },
+  ],
+  run: null, slow: 1, exag: 4, trail: [],
+  presets: [
+    { n: 'Tuned suspension', kind: 'opt', s: { mu: 1, zeta: .25, fn: 1.6, spin: 1400, ramp: 200 }, note: 'Soft springs and strong damping. A 1 kg clump passes resonance at about 13 mm and reaches 1400 rpm with no hit and no walk.' },
+    { n: 'Normal load', kind: 'typ', s: { mu: .3, zeta: .15, fn: 2.5, spin: 1200, ramp: 120 }, note: 'Clothes spread well. The tub swings about 6 mm at resonance and 2 mm at full spin.' },
+    { n: 'One heavy wet towel', kind: 'edge', s: { mu: 1.5, zeta: .15, fn: 2.5, spin: 1400, ramp: 120 }, note: 'A 1.5 kg clump: the tub hits the cabinet at resonance, and the machine walks at full spin.' },
+    { n: 'Worn-out dampers', kind: 'edge', s: { mu: .7, zeta: .04, fn: 2.5, spin: 1200, ramp: 120 }, note: 'With little damping the resonance peak is tall and narrow. The tub bangs the cabinet as it passes 150 rpm.' },
+    { n: 'Springs too stiff', kind: 'edge', s: { mu: .5, zeta: .15, fn: 5, spin: 1200, ramp: 120 }, note: 'Resonance moves up to 300 rpm, where the clump force is 4 times larger. The floor force passes the friction limit and the machine walks.' },
+  ],
+  onPreset() { this.spinning = true; this.run = { hits: 0, walk: 0, max: 0, t: 0 }; this.trail = []; this.wasHit = false; this.extra(); },
+  missions: [
+    { t: 'Find resonance', d: 'Set a spin speed near the natural frequency and hold it there. Watch the tub swing.', win: 'Done. Resonance is at natural frequency × 60 rpm. Here the springs and the mass exchange energy each turn.',
+      check: s => s.hold && Math.abs(s.rpm / (washer.s.fn * 60) - 1) < .1 && s.amp > .002 },
+    { t: 'No bang', d: 'Use a 1 kg clump or more. Spin to 1200 rpm or more and do not hit the cabinet.', win: 'Done. More damping or a faster run-up limits the swing at resonance.',
+      check: s => washer.s.mu >= 1 && s.hold && s.rpm >= 1200 && s.run && s.run.hits === 0 },
+    { t: 'No walk, no bang', d: 'Use a 1.5 kg clump. Spin to 1400 rpm with no hit and no walking. Damping alone does not solve it.', win: 'Done. Softer springs lower the force at high speed, and damping controls resonance. Real machines tune both.',
+      check: s => washer.s.mu >= 1.5 && s.hold && s.rpm >= 1400 && s.run && s.run.hits === 0 && s.run.walk === 0 && s.run.t > 3 },
+  ],
+  build() {
+    const sc = new THREE.Scene(); lights(sc);
+    const cab = glassBox(.6, .85, .6); cab.position.y = .425; sc.add(cab); this.cab = cab;
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(1.2, 48), M(0x8796a3, { transparent: true, opacity: .18 })); floor.rotation.x = -Math.PI / 2; sc.add(floor);
+    const tub = new THREE.Group(); tub.position.y = .45; cab.add(tub); tub.position.y = .025; this.tub = tub;  // relative to cabinet centre
+    const tubShell = new THREE.Mesh(new THREE.CylinderGeometry(.27, .27, .4, 48, 1, true), M(0x9aa6b0, { transparent: true, opacity: .35, side: THREE.DoubleSide, depthWrite: false }));
+    tubShell.rotation.x = Math.PI / 2; tub.add(tubShell);
+    const back = new THREE.Mesh(new THREE.CircleGeometry(.27, 48), M(0x7d8a94, { side: THREE.DoubleSide })); back.position.z = -.2; tub.add(back);
+    const weight = new THREE.Mesh(new THREE.BoxGeometry(.3, .08, .12), M(0x6b6f72)); weight.position.set(0, .3, .1); tub.add(weight);
+    const drum = new THREE.Group(); tub.add(drum); this.drum = drum;
+    const ds = new THREE.Mesh(new THREE.CylinderGeometry(.24, .24, .36, 40, 1, true), M(0xd5dce1, { metalness: .8, roughness: .25, side: THREE.DoubleSide, wireframe: false, transparent: true, opacity: .5, depthWrite: false }));
+    ds.rotation.x = Math.PI / 2; drum.add(ds);
+    for (let i = 0; i < 3; i++) { const l = new THREE.Mesh(new THREE.BoxGeometry(.05, .04, .34), M(0xc5ccd1)); const a = i * 2 * Math.PI / 3; l.position.set(.22 * Math.cos(a), .22 * Math.sin(a), 0); l.rotation.z = a; drum.add(l); }
+    const clump = new THREE.Group(); [[0, 0, 0, .07], [.04, .03, .05, .05], [-.03, .02, -.05, .055]].forEach(([x, y, z, r]) => { const b = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), M(0xc0392b, { roughness: .9, metalness: 0 })); b.position.set(x, y, z); clump.add(b); });
+    clump.position.set(0, -.17, 0); drum.add(clump); this.clump = clump;
+    const door = new THREE.Mesh(new THREE.TorusGeometry(.17, .025, 12, 40), M(0x5d666d)); door.position.z = .3; cab.add(door);
+    // springs above, dampers below (cabinet coordinates)
+    const sm = M(0x8aa0ad, { metalness: .6 }), dm = M(0x41484d), rm = M(0xcfd6db, { metalness: .8 });
+    this.springs = [-.18, .18].map(x => { const m = new THREE.Mesh(helixGeo(.025, 9, .005), sm); cab.add(m); return { m, top: V3(x * 1.15, .41, 0), at: V3(x, .27, 0) }; });
+    this.dampers = [-.14, .14].map(x => { const body = new THREE.Mesh(new THREE.CylinderGeometry(.022, .022, 1, 12), dm), rod = new THREE.Mesh(new THREE.CylinderGeometry(.008, .008, 1, 8), rm);
+      cab.add(body); cab.add(rod); return { body, rod, base: V3(x * 1.4, -.41, 0), at: V3(x, -.26, 0) }; });
+    this.scene = sc; this.cam = { p: [1.3, .95, 1.6], t: [0, .45, 0] };
+    this.state = { t: 0, phi: 0, w: 0, x: 0, y: 0, vx: 0, vy: 0, amp: 0, F: 0 }; this.vphi = 0; this.walkX = 0;
+    this.spinning = !reduced; this.run = { hits: 0, walk: 0, max: 0, t: 0 };  // first view shows a spin-up through resonance
+  },
+  chipsList: [{ k: 'spring', l: 'Springs', c: '#8aa0ad' }, { k: 'damper', l: 'Dampers', c: '#41484d' }, { k: 'clump', l: 'Wet clump', c: '#c0392b' }],
+  partInfo: {
+    spring: 'Springs: they carry the tub weight and set the natural frequency. Softer springs move resonance to a lower speed and send less force to the floor at full spin.',
+    damper: 'Dampers: friction or fluid dampers turn motion into heat. They limit the swing at resonance, but at full spin they push on the floor more.',
+    clump: 'Clump: the clothes are not spread evenly. An off-centre mass m at radius e makes a rotating force m·e·ω². At 1200 rpm, 0.3 kg makes about 1 kN.',
+  },
+  update() {
+    const s = this.s, wn = s.fn * 60, st = P.washerSteady(s, s.spin);
+    this.Fwalk = st.Fwalk;
+    this.drawCharts();
+    this.tilesNow();
+  },
+  tilesNow() {
+    const st = this.state || {}, rpm = (st.w || 0) * 30 / Math.PI, run = this.run;
+    tiles([
+      { l: 'Drum speed', v: fmt(rpm), u: 'rpm', e: `target ${this.s.spin} rpm` },
+      { l: 'Tub swing', v: fmt((st.amp || 0) * 1e3, 1), u: 'mm', cls: st.amp > P.WASHER_DEFAULTS.gap ? 'bad' : st.amp > .7 * P.WASHER_DEFAULTS.gap ? 'warn' : '', e: `cabinet gap ${P.WASHER_DEFAULTS.gap * 1e3} mm` },
+      { l: 'Force on floor', v: fmt(st.F || 0), u: 'N', cls: (st.F || 0) > this.Fwalk ? 'bad' : '', e: `walks above ${fmt(this.Fwalk)} N` },
+      { l: 'Resonance speed', v: fmt(this.s.fn * 60), u: 'rpm' },
+      { l: 'Cabinet hits', v: run ? run.hits : 0, cls: run && run.hits ? 'bad' : '', e: 'this run' },
+      { l: 'Largest swing', v: run ? fmt(run.max * 1e3, 1) : '0.0', u: 'mm', e: 'this run' },
+    ]);
+  },
+  drawCharts() {
+    const s = this.s, gap = P.WASHER_DEFAULTS.gap * 1e3, A = [], F = [], GA = [], GF = [], o = optOf(this);
+    for (let n = 0; n <= 1600; n += 5) { const q = P.washerSteady(s, n), g = P.washerSteady(o, n); A.push([n, q.X * 1e3]); F.push([n, q.F]); GA.push([n, g.X * 1e3]); GF.push([n, g.F]); }
+    const amax = Math.max(30, Math.ceil(Math.max(...A.map(a => a[1])) / 10) * 10), fmax = Math.max(400, Math.ceil(Math.max(...F.map(a => a[1]), this.Fwalk) / 100) * 100 + 100);
+    const tr = this.trail;
+    this.c1 = chart($('#c1'), { x: [0, 1600], y: [0, Math.min(amax, 80)], xlab: 'Drum speed (rpm)', ylab: 'Tub swing (mm)',
+      body: (X, Y) => `<rect class="f-bad" x="${X(0)}" y="${Y(80)}" width="${X(1600) - X(0)}" height="${Y(gap) - Y(80)}"/><text class="lbl-bad" x="${X(1100)}" y="${Y(gap) - 5}">hits cabinet</text>` +
+        `<path class="ghost" d="${path(GA, X, Y)}"/><path class="s-mut dash" d="${path(A, X, Y)}"/>` + tr.map(p => `<circle class="trail" r="1.6" cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}"/>`).join('') +
+        `<text x="${X(s.fn * 60) + 5}" y="${Y(Math.min(80, Math.max(...A.map(a => a[1])))) + 12}">resonance</text>` });
+    this.c2 = chart($('#c2'), { x: [0, 1600], y: [0, Math.min(fmax, 3000)], xlab: 'Drum speed (rpm)', ylab: 'Force on floor (N)',
+      body: (X, Y) => `<rect class="f-bad" x="${X(0)}" y="${Y(3000)}" width="${X(1600) - X(0)}" height="${Y(this.Fwalk) - Y(3000)}"/><text class="lbl-bad" x="${X(40)}" y="${Y(this.Fwalk) - 5}">machine walks</text>` +
+        `<path class="ghost" d="${path(GF, X, Y)}"/><text class="lbl-ok" x="${X(1180)}" y="${Y(GF[GF.length - 1][1]) - 6}">optimal</text><path class="s-acc" d="${path(F, X, Y)}"/>` });
+    $('#c1').setAttribute('aria-label', 'Tub swing against drum speed, steady state and this run.');
+  },
+  frame(dt) {
+    const st = this.state, s = this.s; if (!st) return;
+    const wT = this.spinning ? s.spin * Math.PI / 30 : 0, h = 1e-3;
+    const n = Math.min(200, Math.round(dt * this.slow / h));
+    for (let i = 0; i < n; i++) {
+      P.washerStep(s, st, h, wT);
+      if (this.run) { const r = this.run; r.max = Math.max(r.max, st.amp); if (st.hit && !this.wasHit) r.hits++; this.wasHit = st.hit; if (st.F > this.Fwalk) r.walk += h; r.t += h; }
+    }
+    const rpm = st.w * 30 / Math.PI;
+    st.rpm = rpm; st.hold = this.spinning && Math.abs(rpm - s.spin) < 2; st.run = this.run;
+    if (this.run && st.hold) this.run.holdT = (this.run.holdT || 0) + dt;
+    const ex = this.exag;
+    this.tub.position.set(st.x * ex, .025 + st.y * ex, 0);
+    this.vphi += Math.min(st.w, 14) * dt * this.slow;  // shortcut: drum drawn at most ~130 rpm so it does not alias
+    this.drum.rotation.z = this.vphi;
+    const hit = st.hit, walking = st.F > this.Fwalk;
+    this.cab.edges.material.color.setHex(hit ? 0xe0352b : 0x6f8494);
+    if (walking) this.walkX += (Math.random() - .3) * .0008 * this.slow;
+    this.cab.position.set(this.walkX + (walking ? (Math.random() - .5) * .006 : 0) + (hit ? (Math.random() - .5) * .01 : 0), .425, 0);
+    const tp = this.tub.position;
+    this.springs.forEach(sp => stretch(sp.m, sp.at.clone().add(tp).setY(sp.at.y + tp.y - .025), sp.top));
+    this.dampers.forEach(d => { const at = d.at.clone().add(tp).setY(d.at.y + tp.y - .025), mid = d.base.clone().lerp(at, .55);
+      stretch(d.body, d.base, mid); stretch(d.rod, mid.clone().lerp(d.base, .15), at); });
+    if ((this.k = (this.k || 0) + 1) % 4 === 0) {
+      if (this.spinning || st.w > .5) { this.trail.push([rpm, st.amp * 1e3]); if (this.trail.length > 600) this.trail.shift();
+        const t = this.trail[this.trail.length - 1], c = this.c1, g = $('#c1 svg');
+        if (g && c) g.insertAdjacentHTML('beforeend', `<circle class="trail" r="1.6" cx="${c.X(t[0]).toFixed(1)}" cy="${c.Y(Math.min(t[1], 80)).toFixed(1)}"/>`); }
+      moveDot(this.c1, rpm, Math.min(st.amp * 1e3, 80)); moveDot(this.c2, rpm, st.F);
+      this.tilesNow(); checkMissions(this, st);
+    }
+    $('#alarm').hidden = !(hit || walking); $('#alarm').textContent = hit ? 'Bang: tub hits cabinet' : 'Machine walks';
+    $('#caption').textContent = `${fmt(rpm)} rpm · swing ${fmt(st.amp * 1e3, 1)} mm (drawn ×${ex}) · ${this.slow < 1 ? 'slow motion ×' + (1 / this.slow) : 'real time'}`;
+  },
+  pick(k) {
+    $('#conceptText').textContent = k ? this.partInfo[k] : this.text;
+    const em = (list, on) => list.forEach(m => m.material.emissive && m.material.emissive.setHex(on ? 0x444400 : 0));
+    em(this.springs.map(s => s.m), k === 'spring'); em(this.dampers.map(d => d.body), k === 'damper'); em(this.clump.children, k === 'clump');
+  },
+  extra() {
+    $('#extra').innerHTML = '';
+    stageButtons([
+      { id: 'spinBtn', l: this.spinning ? 'Stop' : 'Start spin', f: e => { this.spinning = !this.spinning; e.textContent = this.spinning ? 'Stop' : 'Start spin';
+        if (this.spinning) { this.run = { hits: 0, walk: 0, max: 0, t: 0 }; this.trail = []; this.wasHit = false; this.drawCharts(); } } },
+      { id: 'slowBtn', l: 'Slow motion', f: e => { this.slow = this.slow === 1 ? .1 : 1; e.setAttribute('aria-pressed', this.slow < 1); } },
+      { id: 'exBtn', l: 'True scale', f: e => { this.exag = this.exag === 4 ? 1 : 4; e.textContent = this.exag === 4 ? 'True scale' : 'Exaggerate ×4'; } },
+    ]);
+  },
+  notes: [
+    'Planar 2-DOF model of the suspended tub (x and y) with linear springs and viscous dampers, time step 1 ms, semi-implicit Euler. It matches the steady-state formula within 1 % at 1200 rpm.',
+    'Suspended mass 40 kg (a published washer model used about 40 kg; Springer, doi 10.1186/2196-1166-1-3). Natural frequency 2.5 Hz and damping ratio 0.15 (est., 1–2.5 Hz and 0.1–0.2 typical).',
+    'Imbalance force m·e·ω² with drum radius e = 0.24 m. Tub-to-cabinet gap 20 mm (est.). Cabinet 30 kg, floor friction 0.4 (est.); the machine "walks" when the floor force exceeds the friction limit.',
+    'The drum is drawn at a capped speed so the eye can follow it. The tub motion is drawn ×4 by default.',
+  ],
+};
+
+// ---------- background props: a small, warm setting behind each machine (metres; u = lab units per metre) ----------
+const DECOR = {
+  fridge: { u: 1, y: 0, set: 'kitchen' }, engine: { u: 10, y: -1.05, set: 'garage' }, washer: { u: 1, y: 0, set: 'laundry' },
+  heatpump: { u: 1, y: 0, set: 'garden' }, microwave: { u: 1, y: -.13, set: 'counter' }, bicycle: { u: 1, y: 0, set: 'park' },
+};
+const PC = { terra: 0xc8734f, sage: 0x8fae8b, leaf: 0x6f9a62, mustard: 0xe0b55a, cream: 0xf3e6cf, dusty: 0x7d9bb5, plum: 0x8c6a8a, wood: 0xb8875b,
+  wall: 0xeadfcd, rose: 0xd99a8b, sky: 0xbfd9e6, white: 0xfbf7ef, dark: 0x3d3833, orange: 0xe8854a };
+const mm = c => M(c, { roughness: .85, metalness: 0 });
+const box = (w, h, d, c, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mm(c)); m.position.set(x, y, z); return m; };
+const cylm = (r1, r2, h, c, x = 0, y = 0, z = 0, seg = 20) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, seg), mm(c)); m.position.set(x, y, z); return m; };
+const ball = (r, c, x = 0, y = 0, z = 0, sx = 1, sy = 1, sz = 1) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mm(c)); m.position.set(x, y, z); m.scale.set(sx, sy, sz); return m; };
+const grp = (...a) => { const g = new THREE.Group(); a.forEach(o => g.add(o)); return g; };
+const PROPS = {
+  wall: (w, h, c = PC.wall) => grp(box(w, h, .04, c, 0, h / 2, 0), box(w, .1, .06, PC.cream, 0, .05, -.02)),
+  window: (w = .8, h = .7) => grp(box(w, h, .02, PC.sky, 0, 0, 0), box(w + .08, .05, .05, PC.white, 0, h / 2, -.02), box(w + .08, .05, .05, PC.white, 0, -h / 2, -.02),
+    box(.05, h, .05, PC.white, w / 2, 0, -.02), box(.05, h, .05, PC.white, -w / 2, 0, -.02), box(.03, h, .04, PC.white, 0, 0, -.02), box(w, .03, .04, PC.white, 0, 0, -.02)),
+  plant: (k = 1) => { const g = grp(cylm(.1 * k, .075 * k, .18 * k, PC.terra, 0, .09 * k, 0), cylm(.09 * k, .09 * k, .02 * k, PC.dark, 0, .18 * k, 0));
+    for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2; const l = ball(.07 * k, i % 2 ? PC.leaf : PC.sage, Math.cos(a) * .06 * k, .3 * k + (i % 3) * .05 * k, Math.sin(a) * .06 * k, .7, 1.8, .7); l.rotation.z = Math.cos(a) * .5; l.rotation.x = Math.sin(a) * .5; g.add(l); }
+    return g; },
+  mug: c => grp(cylm(.04, .036, .09, c, 0, .045, 0), (() => { const t = new THREE.Mesh(new THREE.TorusGeometry(.025, .007, 6, 12), mm(c)); t.position.set(.045, .05, 0); return t; })()),
+  clock: () => { const g = grp(cylm(.15, .15, .03, PC.wood), cylm(.13, .13, .032, PC.cream), box(.012, .09, .035, PC.dark, 0, 0, .035), box(.07, .012, .035, PC.dark, .03, 0, .035));
+    g.children.slice(0, 2).forEach(m => m.rotation.x = Math.PI / 2); g.children[2].position.set(0, .04, .02); g.children[3].position.set(.035, 0, .02); return g; },
+  frame: (c = PC.dusty, w = .45, h = .34) => grp(box(w, h, .03, PC.wood), box(w - .08, h - .08, .035, c), ball(.05, PC.mustard, .06, .03, .02, 1, 1, .2)),
+  shelf: (w = .9) => grp(box(w, .03, .2, PC.wood), box(.03, .12, .03, PC.wood, -w / 3, -.07, -.06), box(.03, .12, .03, PC.wood, w / 3, -.07, -.06)),
+  bottle: (c, h = .22) => grp(cylm(.045, .05, h, c, 0, h / 2, 0), cylm(.02, .02, .04, PC.white, 0, h + .02, 0)),
+  books: () => grp(box(.05, .22, .16, PC.terra, 0, .11, 0), box(.04, .2, .16, PC.dusty, .05, .1, 0), box(.06, .24, .16, PC.mustard, .1, .12, 0)),
+  rug: (r, c = PC.rose) => grp(cylm(r, r, .008, c, 0, .004, 0, 40), cylm(r * .8, r * .8, .01, PC.cream, 0, .005, 0, 40), cylm(r * .62, r * .62, .012, c, 0, .006, 0, 40)),
+  lamp: () => grp(cylm(.12, .14, .03, PC.dark, 0, .015, 0), cylm(.012, .012, 1.3, PC.dark, 0, .66, 0), cylm(.12, .22, .25, PC.mustard, 0, 1.38, 0)),
+  tire: () => { const t = new THREE.Mesh(new THREE.TorusGeometry(.28, .1, 10, 28), mm(PC.dark)); t.rotation.x = Math.PI / 2; t.position.y = .1; return grp(t, cylm(.18, .18, .12, 0x9c958c, 0, .1, 0)); },
+  toolbox: () => grp(box(.5, .24, .24, 0xc4553f, 0, .12, 0), box(.5, .02, .25, 0x8f3b2c, 0, .2, 0), box(.2, .03, .03, PC.dark, 0, .28, 0)),
+  cone: () => grp(new THREE.Mesh(new THREE.ConeGeometry(.12, .4, 16), mm(PC.orange)), cylm(.075, .085, .06, PC.white, 0, .02, 0), box(.3, .03, .3, PC.orange, 0, -.2, 0)).translateY(.2),
+  pegboard: (w, h) => { const g = grp(box(w, h, .03, 0xd8b98f, 0, h / 2 + .5, 0));
+    [[-.5, .2, 0x8f3b2c], [-.2, .35, PC.dusty], [.15, .25, PC.mustard], [.45, .3, PC.sage]].forEach(([x, l, c], i) => { g.add(box(.04, l, .03, c, x * w / 1.4, h * .6 + .5 - l / 2, .03)); const t = new THREE.Mesh(new THREE.TorusGeometry(.04, .012, 6, 12), mm(0x9c958c)); t.position.set(x * w / 1.4, h * .6 + .5 + .02, .03); g.add(t); });
+    return g; },
+  basket: () => { const g = grp(cylm(.22, .18, .3, PC.wood, 0, .15, 0)); [PC.rose, PC.dusty, PC.cream, PC.mustard].forEach((c, i) => g.add(ball(.09, c, (i - 1.5) * .08, .31, (i % 2) * .06 - .03, 1.2, .6, 1))); return g; },
+  clothesline: (w = 1.2) => { const g = grp(cylm(.006, .006, w, PC.dark)); g.children[0].rotation.z = Math.PI / 2;
+    [PC.rose, PC.mustard, PC.dusty, PC.sage].forEach((c, i) => { const x = -w / 2 + (i + .5) * w / 4; g.add(box(.07, .16, .02, c, x, -.09, 0), box(.1, .05, .02, c, x + .02, -.18, 0)); }); return g; },
+  tree: (h = 2) => grp(cylm(.06, .09, h * .45, PC.wood, 0, h * .22, 0), ball(h * .22, PC.leaf, 0, h * .6, 0), ball(h * .17, PC.sage, h * .12, h * .78, .05), ball(h * .15, PC.leaf, -h * .1, h * .8, -.05)),
+  bush: (k = 1) => grp(ball(.25 * k, PC.leaf, 0, .15 * k, 0, 1, .8, 1), ball(.2 * k, PC.sage, .22 * k, .12 * k, .05, 1, .8, 1), ball(.18 * k, PC.leaf, -.2 * k, .1 * k, 0, 1, .8, 1)),
+  cloud: () => grp(ball(.3, PC.white, 0, 0, 0, 1.4, .8, 1), ball(.22, PC.white, .35, -.05, 0, 1.3, .8, 1), ball(.2, PC.white, -.35, -.06, 0, 1.3, .8, 1)),
+  fence: (w = 5) => { const g = grp(box(w, .06, .04, PC.cream, 0, .55, 0), box(w, .06, .04, PC.cream, 0, .25, 0)); for (let x = -w / 2; x <= w / 2 + .01; x += .35) g.add(box(.08, .75, .05, PC.cream, x, .375, .03)); return g; },
+  hill: (r = 4, c = PC.sage) => ball(r, c, 0, -r * .7, 0, 1.6, 1, 1),
+  sign: () => grp(cylm(.03, .03, 1.2, PC.wood, 0, .6, 0), box(.5, .25, .03, PC.mustard, 0, 1.1, .03), box(.36, .04, .035, PC.dark, 0, 1.12, .045)),
+  kettle: () => grp(ball(.1, PC.dusty, 0, .1, 0, 1, .9, 1), new THREE.Mesh(new THREE.ConeGeometry(.02, .1, 8), mm(PC.dusty)), cylm(.03, .03, .02, PC.dark, 0, .19, 0)),
+  bowl: () => grp(ball(.13, PC.cream, 0, .05, 0, 1, .45, 1), ball(.045, PC.orange, -.04, .1, 0), ball(.045, PC.orange, .045, .1, .02), ball(.04, 0x9cc46a, 0, .12, -.04)),
+  slab: (w, d, c = PC.wood) => box(w, .04, d, c, 0, -.02, 0),
+};
+const SETS = {
+  kitchen: [['wall', [4, 2.5], 1, 0], ['window', [], .97, -.8, 1.3], ['clock', [], .97, .9, 1.85], ['shelf', [], .95, .95, 1.2], ['mug', [PC.terra], .93, .8, 1.215], ['mug', [PC.dusty], .93, .95, 1.215], ['books', [], .9, 1.15, 1.215],
+    ['plant', [1.6], .6, 1.15], ['lamp', [], .6, -1.3], ['rug', [.9], 0, 0]],
+  garage: [['wall', [3, 2], .5, 0, 0, 0xd9cdb8], ['pegboard', [1.4, .6], .48, -.1, -.42], ['tire', [], .42, 1.05], ['tire', [], .42, 1.05, .2], ['toolbox', [], .4, -.85], ['cone', [], .3, -1.1], ['bottle', [0xc4553f, .25], .42, .55]],
+  laundry: [['wall', [3.4, 2.4], .55, 0], ['shelf', [1], .53, 0, 1.25], ['bottle', [PC.dusty], .5, -.25, 1.265], ['bottle', [PC.rose, .18], .5, -.05, 1.265], ['bottle', [PC.mustard, .2], .5, .15, 1.265],
+    ['clothesline', [1.4], .45, 0, 1.75], ['basket', [], .15, .75], ['plant', [1.3], .3, -.8], ['frame', [PC.sage], .53, -.75, 1.35], ['rug', [.6, PC.dusty], 0, 0]],
+  garden: [['fence', [6], 1.2, 0], ['tree', [2.4], 1.8, -2.1], ['tree', [2], 2.1, 2.4], ['bush', [1.2], 1, -1.3], ['bush', [1], .9, 1.6], ['cloud', [], 3, -1, 2.8], ['cloud', [], 3.5, 1.6, 3.1], ['hill', [5], 6, 0]],
+  counter: [['slab', [1.4, .6], 0, 0], ['wall', [1.6, .9], .32, 0, -.02], ['window', [.4, .3], .3, -.35, .5], ['kettle', [], .24, .5], ['mug', [PC.terra], .25, -.45], ['mug', [PC.sage], .27, -.55], ['plant', [.7], .27, -.7], ['bowl', [], .22, .7]],
+  park: [['hill', [6, PC.sage], 9, -3], ['hill', [5, PC.leaf], 10, 4], ['tree', [2.6], 2.4, -2.2], ['tree', [2], 3, 2], ['tree', [1.6], 3.8, .3], ['bush', [1], 1.6, -1.2], ['bush', [.8], 1.8, 1.4], ['sign', [], 1.4, 1.5], ['cloud', [], 6, -2, 3.2], ['cloud', [], 7, 2.5, 3.6]],
+};
+function addDecor(lab) {
+  const cfg = DECOR[lab.id] || lab.decor; if (!cfg || !lab.scene || lab.scene.userData.decor) return; lab.scene.userData.decor = true;  // lab.decor = {u, y, set | items}
+  const p = V3(...lab.cam.p), t = V3(...lab.cam.t), fwd = t.clone().sub(p).setY(0).normalize(), side = V3(-fwd.z, 0, fwd.x), yaw = Math.atan2(fwd.x, fwd.z) + Math.PI;
+  const root = new THREE.Group(); root.name = 'decor'; lab.scene.add(root);
+  (cfg.items || SETS[cfg.set]).forEach(([k, args, f, sd, h = 0, col]) => {
+    const o = PROPS[k](...args); if (col !== undefined) o.traverse(m => m.material && m.material.color && m === o.children[0] && m.material.color.setHex(col));
+    o.scale.multiplyScalar(cfg.u); o.rotation.y = yaw;
+    o.position.copy(t).setY(cfg.y + h * cfg.u).addScaledVector(fwd, f * cfg.u).addScaledVector(side, sd * cfg.u); root.add(o);
+  });
+}
+
+// ---------- app shell ----------
+// Labs register themselves; extra labs live in labs/<id>.js and call registerLab() (see labs/README.md).
+const labs = {}; let cur = null;
+function registerLab(l) { labs[l.id] = l; }
+[fridge, engine, washer].forEach(registerLab);
+function fitCam() {  // back the camera off when the stage is narrow, so the whole machine stays in view
+  if (!cur) return; const t = V3(...cur.cam.t), p = V3(...cur.cam.p);
+  camera.position.copy(t).add(p.sub(t).multiplyScalar(Math.max(1, 1.05 / camera.aspect))); controls.target.copy(t); controls.update();
+}
+function resize() { const r = canvas.parentElement.getBoundingClientRect(); if (!r.width || !r.height) return;
+  renderer.setSize(r.width, r.height, false); sizeRT(r.width, r.height); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); fitCam(); }
+new ResizeObserver(resize).observe(canvas.parentElement);
+function show(id) {
+  const lab = labs[id] || fridge; cur = lab;
+  document.querySelectorAll('#nav button').forEach(b => b.setAttribute('aria-selected', b.dataset.lab === lab.id));
+  if (!lab.scene) lab.build();
+  addDecor(lab);
+  const T = TEACH[lab.id];
+  if (T && !lab.taught) { lab.taught = true; lab.keyTiles = T.key; lab.myth = T.myth; lab.missions.forEach((m, i) => Object.assign(m, T.missions[i])); }
+  const my = lab.myth;
+  $('#myth').innerHTML = my ? `<p class="eyebrow">Myth or fact?</p><p class="mq">“${my.m}”</p><p class="mt"><b>Test it.</b> ${my.t}</p><details><summary>What is true</summary><p>${my.a}</p></details>` : '';
+  $('#eyebrow').textContent = lab.eyebrow; $('#concept').textContent = lab.concept; $('#conceptText').textContent = lab.text; $('#home').textContent = lab.home;
+  $('#c1b').innerHTML = ''; $('#c2b').innerHTML = ''; $('#stageBtns').innerHTML = '';
+  const t = lab.charts;
+  [$('#c1t').textContent, $('#c1p').textContent, $('#c2t').textContent, $('#c2p').textContent] = t;
+  $('#notesList').innerHTML = lab.notes.map(n => `<li>${n}</li>`).join('');
+  chips(lab.chipsList, k => lab.pick(k));
+  buildSliders(lab); buildPresets(lab); lab.viaPreset = false; buildMissions(lab); lab.extra(); lab.update();
+  ['#conceptText', '#home', '#c1p', '#c2p', '#myth'].forEach(q => glossify($(q))); document.querySelectorAll('#sliders .sl, #notesList li').forEach(glossify);
+  if (location.hash.slice(1) !== lab.id) history.replaceState(null, '', '#' + lab.id);
+  store.set('lab', lab.id); resize(); fitText();
+}
+let last = performance.now();
+function loop(now) {
+  const dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;  // rAF time can be earlier than the last stamp
+  if (cur && !document.hidden) { cur.frame(reduced ? dt * .3 : dt); controls.update(); draw(cur.scene, now); }
+  requestAnimationFrame(loop);
+}
+// nav: category row, then the machines of the open category (labs not listed fall into the last group)
+const GROUPS = [['Home', ['fridge', 'washer', 'microwave', 'heatpump', 'thermostat']], ['Road', ['engine', 'bicycle']],
+  ['Power', ['motor', 'pump', 'windturbine', 'battery']], ['Air', ['airfoil']], ['Signals', ['gps']], ['Light', ['camera']]];
+const groupOf = id => (GROUPS.find(g => g[1].includes(id)) || GROUPS[GROUPS.length - 1])[0];
+function boot() {
+  buildLooks();
+  const order = GROUPS.flatMap(g => g[1]).filter(id => labs[id]).concat(Object.keys(labs).filter(id => !GROUPS.some(g => g[1].includes(id))));
+  $('#nav').innerHTML = order.map(id => `<button role="tab" id="tab-${id}" data-lab="${id}" data-g="${groupOf(id)}" aria-selected="false"><small>${groupOf(id)}</small><span>${labs[id].tab}</span></button>`).join('');
+  document.querySelectorAll('#nav button').forEach(b => b.onclick = () => show(b.dataset.lab));
+  show(location.hash.slice(1) || store.get('lab', 'fridge'));
+  requestAnimationFrame(loop);
+}
+</script>
+<script src="labs/heatpump.js"></script>
+<script src="labs/microwave.js"></script>
+<script src="labs/bicycle.js"></script>
+<script src="labs/motor.js"></script>
+<script src="labs/pump.js"></script>
+<script src="labs/windturbine.js"></script>
+<script src="labs/airfoil.js"></script>
+<script src="labs/camera.js"></script>
+<script src="labs/gps.js"></script>
+<script src="labs/battery.js"></script>
+<script src="labs/thermostat.js"></script>
+<script>boot();</script>

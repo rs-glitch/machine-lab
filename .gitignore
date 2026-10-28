@@ -1,0 +1,7 @@
+shots/
+web/_*.html
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+node_modules/

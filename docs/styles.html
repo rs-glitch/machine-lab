@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hand-Drawn 3D Studies</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&family=Kalam:wght@400;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+/* base reset, so the page renders the same when served on its own */
+body { margin: 0 } img { max-width: 100% } [hidden] { display: none !important }
+/* Layout: one live 3D engine drawn in four hand-made styles. Canvas left, chart and sample controls right. Each style sets its own paper, ink and hand. */
+:root { --paper: #f2ecdf; --ink: #3b2b1e; --accent: #b5532f; --font: "Caveat", "Comic Sans MS", cursive; --fs: 1.25; color-scheme: light }
+* { box-sizing: border-box }
+body { background: var(--paper); color: var(--ink); font: calc(15px * var(--fs))/1.4 var(--font); transition: background .4s, color .4s;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 40px }
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 14px }
+h1 { font: 700 calc(30px * var(--fs))/1.05 var(--font); margin: 0; text-wrap: balance }
+p { margin: 0 0 6px; max-width: 68ch }
+.styles { display: flex; flex-wrap: wrap; gap: 8px }
+.styles button { font: calc(15px * var(--fs)) var(--font); color: var(--ink); background: transparent; border: 2px solid var(--ink); padding: 6px 14px; cursor: pointer;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px }
+.styles button[aria-pressed="true"] { background: var(--ink); color: var(--paper) }
+button:focus-visible, input:focus-visible { outline: 2px dashed var(--accent); outline-offset: 3px }
+.main { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 14px }
+.stage { position: relative; min-height: 520px; border: 2px solid var(--ink); border-radius: 18px 225px 15px 255px / 255px 15px 225px 15px; overflow: hidden }
+.stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none }
+.hint { position: absolute; left: 12px; bottom: 10px; font-size: calc(13px * var(--fs)); opacity: .8; pointer-events: none }
+.side { display: grid; gap: 12px; align-content: start; min-width: 0 }
+.box { border: 2px solid var(--ink); padding: 12px 14px; border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; min-width: 0 }
+.box h2 { font: 700 calc(20px * var(--fs))/1.1 var(--font); margin: 0 0 4px }
+.box svg { width: 100%; height: auto; display: block }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+.tile { border: 1.5px solid var(--ink); padding: 6px 8px; border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px }
+.tile b { display: block; font-size: calc(22px * var(--fs)); line-height: 1.1 }
+.tile span { font-size: calc(12px * var(--fs)); opacity: .8 }
+label { display: flex; justify-content: space-between; font-size: calc(14px * var(--fs)) }
+input[type=range] { width: 100%; accent-color: var(--accent) }
+.refs { font-size: calc(13px * var(--fs)); opacity: .85 }
+.ask { font-size: calc(15px * var(--fs)) }
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr) } .stage { min-height: 380px; height: 56vh } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Hand-drawn 3D: four studies</h1>
+    <p>This is the same live 3D engine each time. Drag it to rotate it. Each style is a shader on the real model: the outlines come from depth and normal edges, the shading from hatching, washes or dither. The lines "boil" 8 times per second, as in hand-drawn animation.</p>
+  </header>
+  <div class="styles" id="styles" role="group" aria-label="Drawing style"></div>
+  <section class="main">
+    <div class="stage"><canvas id="gl" aria-label="Single-cylinder engine drawn by hand in 3D. Drag to rotate."></canvas><span class="hint" id="hint">drag to rotate · pinch to zoom</span></div>
+    <div class="side">
+      <div class="box"><h2 id="sname"></h2><p id="sdesc"></p><p class="refs" id="srefs"></p></div>
+      <div class="box"><h2>P–V loop</h2><svg id="pv" viewBox="0 0 360 230" role="img" aria-label="Hand-drawn pressure-volume loop with a moving dot"></svg></div>
+      <div class="box">
+        <div class="tiles"><div class="tile"><span>torque</span><b>149 N·m</b></div><div class="tile"><span>peak</span><b id="pk">–</b></div><div class="tile"><span>stroke</span><b id="stk">intake</b></div></div>
+        <label for="spd" style="margin-top:10px"><span>animation speed</span><output id="spdo">1.0×</output></label>
+        <input type="range" id="spd" min="0.2" max="2" step="0.1" value="1">
+        <label for="boil"><span>line boil (8 fps)</span><input type="checkbox" id="boil" checked></label>
+      </div>
+    </div>
+  </section>
+  <p class="ask"><b>Question:</b> which style should the whole Machine Lab use? You can also mix them, for example comic fills with ink hatching.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/roughjs@4.6.6/bundled/rough.js"></script>
+<script src="physics.js"></script>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const STYLES = [
+  { id: 0, name: 'Ink sketchbook', font: '"Caveat", cursive', fs: 1.25, ink: '#3b2b1e', paper: '#efe8da', accent: '#b5532f', wob: 2.4, lw: 1.2, rough: 1.3,
+    desc: 'Sepia ink outlines, cross-hatching where the light is low, and a loose watercolour wash that does not quite match the lines.',
+    refs: 'Refs: Leonardo notebooks, engineering sketchbooks, Ciechanowski cutaways.' },
+  { id: 1, name: 'Flat comic (ligne claire)', font: '"Patrick Hand", cursive', fs: 1.1, ink: '#151515', paper: '#fbfaf5', accent: '#e0552f', wob: .9, lw: 2.2, rough: .8,
+    desc: 'Thick, clean black outlines and flat colour in three light bands. Every part is easy to tell apart at phone size.',
+    refs: 'Refs: Hergé ligne claire, Moebius, the game Sable.' },
+  { id: 2, name: 'Chalkboard lecture', font: '"Kalam", cursive', fs: 1.05, ink: '#eef0e6', paper: '#2c3d36', accent: '#f2c14e', wob: 1.6, lw: 1.6, rough: 2,
+    desc: 'Chalk lines with grain on a dark board, and pastel chalk hatching in the part colours. It reads as a lecture someone draws for you.',
+    refs: 'Refs: university lecture boards, Khan Academy style sketches.' },
+  { id: 3, name: '1-bit engraving', font: '"Space Mono", monospace', fs: .95, ink: '#1f2326', paper: '#e7e3d6', accent: '#1f2326', wob: 0, lw: 1, rough: 0,
+    desc: 'Two colours only. Shading is an ordered dither pattern, like an old engraving or an early Macintosh screen.',
+    refs: 'Refs: Return of the Obra Dinn, 1984 Macintosh, patent drawings.' },
+];
+let style = STYLES[0];
+
+// ---------- scene: single-cylinder engine, cutaway liner ----------
+const canvas = $('#gl'), renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+const dpr = Math.min(devicePixelRatio, 2); renderer.setPixelRatio(dpr);
+const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(36, 1, .1, 40);
+cam.position.set(4.2, 3.2, 5.4);
+const controls = new THREE.OrbitControls(cam, canvas); controls.target.set(0, 1.25, 0); controls.enableDamping = true;
+scene.add(new THREE.AmbientLight(0xffffff, .35));
+const sun = new THREE.DirectionalLight(0xffffff, .85); sun.position.set(3, 5, 4); scene.add(sun);
+const L = c => new THREE.MeshLambertMaterial({ color: c, side: THREE.DoubleSide });
+const mSteel = L(0xc3c9ce), mDark = L(0x5b636a), mGas = L(0x7fb8e6), mHead = L(0x9aa5ad), mIn = L(0x3f8fc4), mEx = L(0xd9733c), mBlock = L(0xb7aa95);
+const a = .432, Lr = 1.44, rB = .405, pTop = .41, yTDC = a + Lr + pTop, hc = .1;
+const crank = new THREE.Group(); scene.add(crank);
+const cyl = (r, h, m, seg = 32, open = false, t0 = 0, tl = Math.PI * 2) => new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg, 1, open, t0, tl), m);
+const jr = cyl(.2, 1.3, mSteel); jr.rotation.x = Math.PI / 2; crank.add(jr);
+[-.3, .3].forEach(z => { const w = cyl(.62, .12, mDark, 40, false, Math.PI / 2, Math.PI); w.rotation.x = Math.PI / 2; w.position.z = z; crank.add(w);
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(.42, a + .2, .12), mDark); arm.position.set(0, a / 2, z); crank.add(arm); });
+const cp = cyl(.18, .5, mSteel); cp.rotation.x = Math.PI / 2; cp.position.y = a; crank.add(cp);
+const rod = new THREE.Mesh(new THREE.BoxGeometry(.2, 1, .15), mSteel); scene.add(rod);
+const piston = new THREE.Group(); scene.add(piston);
+const pb = cyl(rB * .98, .62, mSteel, 40); pb.position.y = .1; piston.add(pb);
+[.32, .25].forEach(y => { const r = new THREE.Mesh(new THREE.TorusGeometry(rB * .985, .014, 6, 40), mDark); r.rotation.x = Math.PI / 2; r.position.y = y; piston.add(r); });
+const gas = cyl(rB * .96, 1, mGas, 40); scene.add(gas);
+const yHead = yTDC + hc, yBot = yTDC - 2 * a - .55;
+const liner = cyl(rB * 1.08, yHead - yBot, mBlock, 48, true, Math.PI * .1, Math.PI * 1.1); liner.position.y = (yHead + yBot) / 2; liner.rotation.y = Math.PI * .55; scene.add(liner);
+const head = new THREE.Mesh(new THREE.BoxGeometry(1.3, .45, 1.0), mHead); head.position.y = yHead + .225; scene.add(head);
+const valves = [-1, 1].map(sx => { const g = new THREE.Group(); const st = cyl(.03, .7, mSteel, 8); st.position.y = .35; g.add(st);
+  const d = cyl(.15, .05, sx < 0 ? mIn : mEx, 24); g.add(d); g.position.set(sx * .2, yHead, 0); scene.add(g); return g; });
+const plug = cyl(.06, .5, L(0xeeeeee), 12); plug.position.y = yHead + .5; scene.add(plug);
+const base = new THREE.Mesh(new THREE.BoxGeometry(2.2, .12, 1.6), mBlock); base.position.y = -.75; scene.add(base);
+
+// ---------- passes: normals+depth, colour, then the hand-drawn shader ----------
+const nMat = new THREE.ShaderMaterial({ uniforms: { far: { value: 20 } }, side: THREE.DoubleSide,
+  vertexShader: 'varying vec3 vN; varying float vZ; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); vN = normalize(normalMatrix * normal); vZ = -mv.z; gl_Position = projectionMatrix * mv; }',
+  fragmentShader: 'varying vec3 vN; varying float vZ; uniform float far; void main(){ vec3 n = normalize(vN); if (!gl_FrontFacing) n = -n; gl_FragColor = vec4(n * .5 + .5, vZ / far); }' });
+const rtOpt = { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
+let rtN = new THREE.WebGLRenderTarget(4, 4, rtOpt), rtC = new THREE.WebGLRenderTarget(4, 4, rtOpt);
+const post = new THREE.ShaderMaterial({
+  uniforms: { tN: { value: null }, tC: { value: null }, res: { value: new THREE.Vector2(1, 1) }, dpr: { value: dpr }, seed: { value: 0 }, style: { value: 0 },
+    wob: { value: 2 }, lw: { value: 1.2 }, ink: { value: new THREE.Color() }, paper: { value: new THREE.Color() } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }',
+  fragmentShader: `
+precision highp float;
+varying vec2 vUv;
+uniform sampler2D tN, tC; uniform vec2 res; uniform float dpr, seed, style, wob, lw; uniform vec3 ink, paper;
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+  return mix(mix(hash(i), hash(i + vec2(1., 0.)), f.x), mix(hash(i + vec2(0., 1.)), hash(i + vec2(1., 1.)), f.x), f.y); }
+float edgeAt(vec2 uv){
+  vec2 px = lw * dpr / res;
+  vec4 l = texture2D(tN, uv - vec2(px.x, 0.)), r = texture2D(tN, uv + vec2(px.x, 0.)), u = texture2D(tN, uv + vec2(0., px.y)), d = texture2D(tN, uv - vec2(0., px.y));
+  float dn = length(l.rgb - r.rgb) + length(u.rgb - d.rgb);
+  float dz = (abs(l.a - r.a) + abs(u.a - d.a)) / max(.02, min(min(l.a, r.a), min(u.a, d.a)));
+  return clamp(smoothstep(.3, .7, dn) + smoothstep(.05, .14, dz), 0., 1.);
+}
+float hatch(vec2 fc, vec2 dir, float sp, float w){ float t = dot(fc, dir) / sp + (noise(fc * .03) - .5) * .8; float d = abs(fract(t) - .5) * sp; return 1. - smoothstep(w * .5, w * .5 + 1., d); }
+float bayer2(vec2 a){ a = floor(a); return fract(a.x / 2. + a.y * a.y * .75); }
+float bayer4(vec2 a){ return bayer2(.5 * a) * .25 + bayer2(a); }
+vec3 hue(vec3 c){ return c / max(.001, max(c.r, max(c.g, c.b))); }
+void main(){
+  vec2 fc = gl_FragCoord.xy / dpr, uv = vUv;
+  vec2 w = vec2(noise(fc * .025 + seed * 7.13), noise(fc * .025 + seed * 3.31 + 19.)) - .5;
+  vec2 uvw = uv + w * wob * dpr / res * 2.;
+  float e = edgeAt(uvw);
+  vec4 n = texture2D(tN, uvw); vec3 c = texture2D(tC, uvw).rgb;
+  float bg = step(.999, n.a), lum = dot(c, vec3(.3, .59, .11));
+  float grain = noise(fc * .7) * .5 + noise(fc * .13) * .5;
+  vec3 col;
+  if (style < .5) {
+    vec3 pap = paper * (.94 + .06 * grain);
+    vec2 wo = uv + (vec2(noise(fc * .012 + 3.), noise(fc * .012 + 9.)) - .5) * 16. * dpr / res;
+    vec3 wc = texture2D(tC, wo).rgb; float wbg = step(.999, texture2D(tN, wo).a);
+    vec3 wash = mix(pap, pap * mix(vec3(1.), hue(wc), .6), (1. - wbg) * (.5 + .35 * noise(fc * .05)));
+    float h = 0.;
+    if (bg < .5) { h = max(h, hatch(fc, normalize(vec2(1., 1.)), 6., 1.) * step(lum, .6));
+      h = max(h, hatch(fc, normalize(vec2(1., -1.)), 6., 1.) * step(lum, .42));
+      h = max(h, hatch(fc, normalize(vec2(1., .15)), 4.5, 1.) * step(lum, .26)); }
+    col = mix(wash, ink, max(e, h * .7) * (.7 + .3 * grain));
+  } else if (style < 1.5) {
+    float band = lum > .62 ? 1. : lum > .38 ? .8 : .58;
+    col = bg > .5 ? paper : mix(paper, hue(c) * band, .88);
+    col = mix(col, ink, e);
+  } else if (style < 2.5) {
+    vec3 board = paper * (.82 + .3 * noise(fc * .004 + 2.)) * (.95 + .05 * grain);
+    float chalk = smoothstep(.2, .8, noise(fc * 1.3 + seed));
+    float h = 0.;
+    if (bg < .5) h = max(hatch(fc, normalize(vec2(1., .6)), 7., 1.6) * step(lum, .72), hatch(fc, normalize(vec2(-.6, 1.)), 7., 1.6) * step(lum, .46));
+    vec3 tint = mix(ink, hue(c) * .55 + .45, .65);
+    col = mix(board, tint, h * .6 * chalk);
+    col = mix(col, ink, e * (.5 + .5 * chalk));
+  } else {
+    float on = step(bayer4(fc * .5), lum * 1.2 - .08);
+    col = bg > .5 ? paper : mix(ink, paper, on);
+    col = mix(col, ink, step(.45, e));
+  }
+  gl_FragColor = vec4(col, 1.);
+}` });
+const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), post), postScene = new THREE.Scene(), postCam = new THREE.Camera(); postScene.add(quad);
+
+function resize() {
+  const r = canvas.parentElement.getBoundingClientRect(); if (!r.width || !r.height) return;
+  renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix();
+  const w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  rtN.setSize(w, h); rtC.setSize(w, h); post.uniforms.res.value.set(w, h);
+}
+new ResizeObserver(resize).observe(canvas.parentElement);
+
+// ---------- hand-drawn P-V chart (rough.js) ----------
+const cyc = Phys.engineCycle({ spark: 25 }), pts = cyc.pts.filter((_, i) => i % 6 === 0).map(q => [q[1] * 1e6, q[2] / 100]);
+const X = v => 40 + v / 520 * 305, Y = p => 195 - p / 75 * 180;
+function drawPV() {
+  const svg = $('#pv'); svg.innerHTML = '';
+  const ink = style.ink, rc = typeof rough !== 'undefined' ? rough.svg(svg) : null, o = { stroke: ink, roughness: style.rough, bowing: style.rough, strokeWidth: 1.4 };
+  const line = (p, opt) => { if (rc) svg.appendChild(rc.linearPath(p, Object.assign({}, o, opt))); };
+  line([[40, 15], [40, 195], [350, 195]], { strokeWidth: 1.6 });
+  line(pts.map(q => [X(q[0]), Y(q[1])]), { stroke: style.id === 3 ? ink : style.accent, strokeWidth: 2.2 });
+  if (rc) svg.appendChild(rc.rectangle(X(cyc.Vc * 1e6) - 4, Y(cyc.Pmax) - 6, 10, 10, Object.assign({}, o, { fill: style.accent, fillStyle: style.id === 3 ? 'solid' : 'hachure', strokeWidth: 1 })));
+  const t = (x, y, s, a = 'start') => svg.insertAdjacentHTML('beforeend', `<text x="${x}" y="${y}" text-anchor="${a}" fill="${ink}" style="font:${16 * style.fs}px ${style.font}">${s}</text>`);
+  t(195, 224, 'volume (cm³)', 'middle'); svg.insertAdjacentHTML('beforeend', `<text transform="translate(24 110) rotate(-90)" text-anchor="middle" fill="${ink}" style="font:${15 * style.fs}px ${style.font}">pressure (bar)</text>`); t(X(cyc.Vc * 1e6) + 12, Y(cyc.Pmax) + 4, `peak ${cyc.Pmax.toFixed(0)} bar`);
+  svg.insertAdjacentHTML('beforeend', `<circle id="pvdot" r="6" fill="${ink}" stroke="${style.paper}" stroke-width="2"/>`);
+}
+
+$('#pk').textContent = cyc.Pmax.toFixed(0) + ' bar';
+function setStyle(s) {
+  style = s; const r = document.documentElement.style;
+  r.setProperty('--paper', s.paper); r.setProperty('--ink', s.ink); r.setProperty('--accent', s.accent); r.setProperty('--font', s.font); r.setProperty('--fs', s.fs);
+  document.documentElement.style.colorScheme = s.id === 2 ? 'dark' : 'light';
+  post.uniforms.style.value = s.id; post.uniforms.wob.value = s.wob; post.uniforms.lw.value = s.lw;
+  post.uniforms.ink.value.set(s.ink); post.uniforms.paper.value.set(s.paper);
+  $('#sname').textContent = s.name; $('#sdesc').textContent = s.desc; $('#srefs').textContent = s.refs;
+  document.querySelectorAll('#styles button').forEach((b, i) => b.setAttribute('aria-pressed', i === s.id));
+  drawPV();
+}
+$('#styles').innerHTML = STYLES.map(s => `<button aria-pressed="false">${s.name}</button>`).join('');
+document.querySelectorAll('#styles button').forEach((b, i) => b.onclick = () => setStyle(STYLES[i]));
+$('#spd').oninput = e => $('#spdo').textContent = (+e.target.value).toFixed(1) + '×';
+
+// ---------- animation ----------
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let th = -360, last = performance.now(), V = new THREE.Vector3();
+function place() {
+  const t = th * Math.PI / 180, yPin = Phys.pistonY(Phys.ENGINE_DEFAULTS, th) * 10;
+  crank.rotation.z = -t; piston.position.y = yPin;
+  const p0 = new THREE.Vector3(a * Math.sin(t), a * Math.cos(t), 0), p1 = new THREE.Vector3(0, yPin, 0), dir = p1.clone().sub(p0);
+  rod.position.copy(p0).addScaledVector(dir, .5); rod.scale.set(1, dir.length(), 1); rod.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+  const top = yPin + pTop, h = Math.max(.01, yHead - top); gas.scale.y = h; gas.position.y = top + h / 2;
+  const lift = c => { const d = Math.abs(((th - c + 540) % 720) - 180); return d < 115 ? .09 * Math.cos(d / 115 * Math.PI / 2) ** 2 : 0; };
+  valves[0].position.y = yHead - lift(-270); valves[1].position.y = yHead - lift(270);
+  const q = cyc.pts[Math.min(cyc.pts.length - 1, Math.max(0, Math.round((th + 360) / .5)))];
+  mGas.color.setHex(th < -180 ? 0x7fb8e6 : th < 0 ? (q[3] > 0 ? 0xf0a050 : 0x9ab0c4) : th < 180 ? 0xf08a3a : 0x8c7d70);
+  $('#stk').textContent = th < -180 ? 'intake' : th < 0 ? 'squeeze' : th < 180 ? 'power' : 'exhaust';
+  const d = $('#pvdot'); if (d) { d.setAttribute('cx', X(q[1] * 1e6)); d.setAttribute('cy', Y(q[2] / 100)); }
+}
+function loop(now) {
+  const dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;
+  if (!document.hidden) {
+    th += dt * 720 / 3.2 * +$('#spd').value * (reduced ? .3 : 1); if (th >= 360) th -= 720;
+    place(); controls.update();
+    post.uniforms.seed.value = $('#boil').checked && !reduced ? Math.floor(now / 125) % 7 : 0;
+    scene.overrideMaterial = nMat; renderer.setRenderTarget(rtN); renderer.setClearColor(new THREE.Color(.5, .5, 1), 1); renderer.clear(); renderer.render(scene, cam);
+    scene.overrideMaterial = null; renderer.setRenderTarget(rtC); renderer.setClearColor(0xffffff, 1); renderer.clear(); renderer.render(scene, cam);
+    renderer.setRenderTarget(null); post.uniforms.tN.value = rtN.texture; post.uniforms.tC.value = rtC.texture; renderer.render(postScene, postCam);
+  }
+  requestAnimationFrame(loop);
+}
+const hashId = (location.hash.slice(1) | 0); setStyle(STYLES[hashId] || STYLES[0]); resize(); requestAnimationFrame(loop);
+</script>
